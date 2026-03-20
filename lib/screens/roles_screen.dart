@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
+import 'role_detail_screen.dart';
 
 class RolesScreen extends StatelessWidget {
   const RolesScreen({super.key});
@@ -11,21 +12,21 @@ class RolesScreen extends StatelessWidget {
       children: const [
         RoleCard(
           title: "Admin",
-          id: "R-001",
+          id: "01",
           description:
               "Acceso total a todas las funciones del sistema, configuración global y gestión de usuarios.",
           time: "Hace 2h",
         ),
         RoleCard(
           title: "Empleado",
-          id: "R-002",
+          id: "02",
           description:
               "Permisos para gestión de ventas, procesamiento de pedidos e inventario básico.",
           time: "Hace 1d",
         ),
         RoleCard(
           title: "Cliente",
-          id: "R-003",
+          id: "03",
           description:
               "Visualización de catálogo de productos, seguimiento de pedidos y gestión de perfil.",
           time: "Hace 3d",
@@ -66,11 +67,10 @@ class RoleCard extends StatelessWidget {
       ),
       child: Stack(
         children: [
-          // 🔶 Línea amarilla
           Positioned(
             left: 0,
-            top: 0,
-            bottom: 0,
+            top: 5,
+            bottom: 5,
             child: Container(
               width: 5,
               decoration: const BoxDecoration(
@@ -83,13 +83,13 @@ class RoleCard extends StatelessWidget {
             ),
           ),
 
-          // 📄 CONTENIDO
+          // CONTENIDO
           Padding(
-            padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
+            padding: const EdgeInsets.fromLTRB(20, 20, 80, 20),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // 🔹 Título
+                // TITULO
                 Text(
                   title,
                   style: const TextStyle(
@@ -126,7 +126,7 @@ class RoleCard extends StatelessWidget {
             ),
           ),
 
-          // 🟢 ACTIVO (ARRIBA DERECHA)
+          // ESTADO ACTIVO/INACTIVO (ARRIBA DERECHA)
           Positioned(
             top: 14,
             right: 14,
@@ -153,20 +153,30 @@ class RoleCard extends StatelessWidget {
             ),
           ),
 
-          // 👁 BOTÓN (ABAJO DERECHA)
+          // VER DETALLE (ABAJO DERECHA)
           Positioned(
             bottom: 12,
             right: 12,
-            child: Container(
-              decoration: BoxDecoration(
-                color: const Color(0xFFE5E7FF),
-                borderRadius: BorderRadius.circular(10),
-              ),
-              padding: const EdgeInsets.all(8), // 👈 más pequeño
-              child: const Icon(
-                Icons.visibility,
-                size: 18, // 👈 más pequeño
-                color: Colors.indigo,
+            child: GestureDetector(
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => RoleDetailScreen(title: title),
+                  ),
+                );
+              },
+              child: Container(
+                decoration: BoxDecoration(
+                  color: const Color(0xFFE5E7FF),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                padding: const EdgeInsets.all(8),
+                child: const Icon(
+                  Icons.visibility,
+                  size: 18,
+                  color: Colors.indigo,
+                ),
               ),
             ),
           ),

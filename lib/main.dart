@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'widgets/widgets.dart';
 import 'theme/app_theme.dart';
 import 'screens/roles_screen.dart';
+import 'screens/usuarios.dart';
 
 void main() {
   runApp(const ElectroSoftApp());
@@ -76,7 +77,7 @@ class _MainShellState extends State<MainShell> {
         return const Center(child: Text("Dashboard"));
 
       case 1:
-        return const Center(child: Text("Usuarios"));
+        return UsuariosScreen();
 
       case 2:
         return RolesScreen();

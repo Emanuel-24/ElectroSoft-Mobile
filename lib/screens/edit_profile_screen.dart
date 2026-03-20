@@ -162,25 +162,40 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           const SizedBox(height: 28),
 
           // ── Botón guardar ────────────────────────────────────
-          SizedBox(
-            width: double.infinity,
-            child: ElevatedButton(
-              onPressed: _save,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppTheme.primary,
-                foregroundColor: AppTheme.textDark,
-                padding: const EdgeInsets.symmetric(vertical: 16),
-                shape: RoundedRectangleBorder(
+          Align(
+            alignment: Alignment.centerRight,
+            child: SizedBox(
+              width: 150,
+              height: 50,
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [Colors.white, Color(0xFFFFCC00)],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
                   borderRadius: BorderRadius.circular(14),
                 ),
-                elevation: 0,
-              ),
-              child: const Text(
-                'Editar Perfil',
-                style: TextStyle(
-                  fontWeight: FontWeight.w800,
-                  fontSize: 16,
-                  letterSpacing: 0.2,
+                child: ElevatedButton(
+                  onPressed: _save,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.transparent,
+                    shadowColor: Colors.transparent,
+                    foregroundColor: AppTheme.textDark,
+                    padding: const EdgeInsets.symmetric(vertical: 6),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                    elevation: 0,
+                  ),
+                  child: const Text(
+                    'Editar Perfil',
+                    style: TextStyle(
+                      fontWeight: FontWeight.w800,
+                      fontSize: 16,
+                      letterSpacing: 0.2,
+                    ),
+                  ),
                 ),
               ),
             ),
@@ -291,15 +306,10 @@ class _InputField extends StatelessWidget {
           controller: controller,
           readOnly: readOnly,
           keyboardType: keyboardType,
-          style: TextStyle(
-            fontSize: 14,
-            color: readOnly ? AppTheme.textMuted : AppTheme.textDark,
-          ),
+          style: TextStyle(fontSize: 14, color: AppTheme.textDark),
           decoration: InputDecoration(
             filled: true,
-            fillColor: readOnly
-                ? const Color(0xFFF0F0F0)
-                : const Color(0xFFF5F5F5),
+            fillColor: const Color.fromARGB(255, 225, 225, 225),
             contentPadding: const EdgeInsets.symmetric(
               horizontal: 14,
               vertical: 13,
@@ -358,7 +368,7 @@ class _DropdownField extends StatelessWidget {
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 2),
           decoration: BoxDecoration(
-            color: const Color(0xFFF5F5F5),
+            color: const Color.fromARGB(255, 225, 225, 225),
             borderRadius: BorderRadius.circular(12),
           ),
           child: DropdownButtonHideUnderline(

@@ -1,9 +1,11 @@
+import 'package:electrosoft/screens/cat_productos_screen.dart';
 import 'package:flutter/material.dart';
 import 'widgets/widgets.dart';
 import 'theme/app_theme.dart';
 import 'models/user_profile.dart';
 import 'screens/roles_screen.dart';
 import 'screens/edit_profile_screen.dart';
+import 'screens/usuarios.dart';
 
 void main() {
   runApp(const ElectroSoftApp());
@@ -90,17 +92,20 @@ class _MainShellState extends State<MainShell> {
       case 0:
         return const Center(child: Text('Dashboard')); // → DashboardScreen
       case 1:
-        return const Center(child: Text('Usuarios')); // → UsuariosScreen
+        return UsuariosScreen();
+
       case 2:
-        return const RolesScreen(); // ✅ ya conectado
+        return RolesScreen();
+
       case 3:
-        return const Center(child: Text('Productos')); // → ProductosScreen
+        return CatProductosScreen();
+
       case 4:
         return EditProfileScreen(
-          // ✅ tab Perfil
           profile: _userProfile,
           onSave: (updated) => setState(() => _userProfile = updated),
         );
+
       default:
         return const SizedBox();
     }

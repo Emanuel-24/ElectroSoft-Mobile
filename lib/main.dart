@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'widgets/widgets.dart';
 import 'theme/app_theme.dart';
+import 'screens/roles_screen.dart';
 
 void main() {
   runApp(const ElectroSoftApp());
@@ -24,7 +25,6 @@ class ElectroSoftApp extends StatelessWidget {
   }
 }
 
-/// MainShell — Pantalla raíz. Integra navbar + menú inferior.
 class MainShell extends StatefulWidget {
   const MainShell({super.key});
 
@@ -56,9 +56,7 @@ class _MainShellState extends State<MainShell> {
         showSearch: _showSearch,
         searchHint: _currentHint,
         onSearch: (value) => setState(() => _searchQuery = value),
-        onAvatarTap: () {
-          // TODO: navegar a perfil de usuario
-        },
+        onAvatarTap: () {},
       ),
       body: _buildCurrentPage(),
       bottomNavigationBar: ElectroBottomNav(
@@ -73,24 +71,25 @@ class _MainShellState extends State<MainShell> {
   }
 
   Widget _buildCurrentPage() {
-    return Center(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          const Icon(Icons.construction_rounded, size: 48, color: AppTheme.textMuted),
-          const SizedBox(height: 12),
-          Text(
-            _currentTitle,
-            style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w700, color: AppTheme.textDark),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            _searchQuery.isEmpty ? 'Aquí va tu pantalla' : 'Buscando: "$_searchQuery"',
-            style: const TextStyle(color: AppTheme.textMuted),
-          ),
-        ],
-      ),
-    );
+    switch (_currentIndex) {
+      case 0:
+        return const Center(child: Text("Dashboard"));
+
+      case 1:
+        return const Center(child: Text("Usuarios"));
+
+      case 2:
+        return const RolesScreen();
+
+      case 3:
+        return const Center(child: Text("Productos"));
+
+      case 4:
+        return const Center(child: Text("Más opciones"));
+
+      default:
+        return const SizedBox();
+    }
   }
 }
 
@@ -98,5 +97,10 @@ class _PageConfig {
   final String title;
   final String searchHint;
   final bool showSearch;
-  const _PageConfig({required this.title, this.searchHint = 'Buscar...', this.showSearch = true});
+
+  const _PageConfig({
+    required this.title,
+    this.searchHint = 'Buscar...',
+    this.showSearch = true,
+  });
 }

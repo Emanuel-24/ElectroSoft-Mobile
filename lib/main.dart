@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'widgets/widgets.dart';
 import 'theme/app_theme.dart';
+import 'models/user_profile.dart';
 import 'screens/roles_screen.dart';
+import 'screens/edit_profile_screen.dart';
 
 void main() {
   runApp(const ElectroSoftApp());
@@ -36,12 +38,22 @@ class _MainShellState extends State<MainShell> {
   int _currentIndex = 0;
   String _searchQuery = '';
 
+  // Perfil del usuario — reemplazar con tu fuente de datos real
+  UserProfile _userProfile = const UserProfile(
+    fullName: 'Andres Camilo Santa',
+    email: 'Andrescamilo@gmail.com',
+    phone: '3003478277',
+    document: '1232598525',
+    documentType: 'C.C',
+    role: 'Admin',
+  );
+
   static const List<_PageConfig> _pages = [
     _PageConfig(title: 'Dashboard'),
     _PageConfig(title: 'Usuarios'),
     _PageConfig(title: 'Gestión de roles', searchHint: 'Buscar rol...'),
     _PageConfig(title: 'Productos', searchHint: 'Buscar producto...'),
-    _PageConfig(title: 'Más opciones', showSearch: false),
+    _PageConfig(title: '', showSearch: false),
   ];
 
   String get _currentTitle => _pages[_currentIndex].title;
@@ -56,7 +68,9 @@ class _MainShellState extends State<MainShell> {
         showSearch: _showSearch,
         searchHint: _currentHint,
         onSearch: (value) => setState(() => _searchQuery = value),
-        onAvatarTap: () {},
+        onAvatarTap:
+            () {}, // avatar sin acción — el perfil está en el tab Perfil
+        avatarUrl: _userProfile.avatarUrl,
       ),
       body: _buildCurrentPage(),
       bottomNavigationBar: ElectroBottomNav(
@@ -70,23 +84,23 @@ class _MainShellState extends State<MainShell> {
     );
   }
 
+  // ── ✏️  ZONA DE TRABAJO DEL EQUIPO ────────────────────────────────────────
   Widget _buildCurrentPage() {
     switch (_currentIndex) {
       case 0:
-        return const Center(child: Text("Dashboard"));
-
+        return const Center(child: Text('Dashboard')); // → DashboardScreen
       case 1:
-        return const Center(child: Text("Usuarios"));
-
+        return const Center(child: Text('Usuarios')); // → UsuariosScreen
       case 2:
-        return const RolesScreen();
-
+        return const RolesScreen(); // ✅ ya conectado
       case 3:
-        return const Center(child: Text("Productos"));
-
+        return const Center(child: Text('Productos')); // → ProductosScreen
       case 4:
-        return const Center(child: Text("Más opciones"));
-
+        return EditProfileScreen(
+          // ✅ tab Perfil
+          profile: _userProfile,
+          onSave: (updated) => setState(() => _userProfile = updated),
+        );
       default:
         return const SizedBox();
     }

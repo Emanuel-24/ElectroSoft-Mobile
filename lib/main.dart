@@ -1,3 +1,4 @@
+import 'package:electrosoft/screens/cat_productos_screen.dart';
 import 'package:flutter/material.dart';
 import 'widgets/widgets.dart';
 import 'theme/app_theme.dart';
@@ -83,7 +84,7 @@ class _MainShellState extends State<MainShell> {
         return RolesScreen();
 
       case 3:
-        return const Center(child: Text("Productos"));
+        return CatProductosScreen();
 
       case 4:
         return const Center(child: Text("Más opciones"));

@@ -9,6 +9,8 @@ import '../theme/app_theme.dart';
 ///
 /// PARÁMETROS:
 ///   - [title]       Título de la pantalla actual (ej. "Gestión de roles").
+///                   Si es vacío y [showSearch] es false, solo se muestra
+///                   la fila del logo (altura reducida automáticamente).
 ///   - [showSearch]  Muestra u oculta la barra de búsqueda (default: true).
 ///   - [searchHint]  Placeholder del campo de búsqueda.
 ///   - [onSearch]    Callback que recibe el texto escrito.
@@ -50,21 +52,26 @@ class ElectroAppBar extends StatelessWidget implements PreferredSizeWidget {
     this.avatarUrl,
   });
 
-  // Altura total: fila del logo (56) + fila del título+búsqueda (64) + padding
+  // Solo muestra la fila del logo cuando no hay título ni búsqueda
+  bool get _soloLogo => title.isEmpty && !showSearch;
+
   @override
-  Size get preferredSize => const Size.fromHeight(130);
+  Size get preferredSize => Size.fromHeight(_soloLogo ? 72 : 130);
 
   @override
   Widget build(BuildContext context) {
+    final topPadding = MediaQuery.of(context).padding.top;
+
     return Container(
       color: AppTheme.surface,
       padding: EdgeInsets.only(
-        top: MediaQuery.of(context).padding.top + 8,
+        top: topPadding + 8,
         left: 20,
         right: 20,
         bottom: 12,
       ),
       child: Column(
+        mainAxisSize: MainAxisSize.min,
         children: [
           // ── Fila 1: Logo + Avatar ──────────────────────────────
           Row(
@@ -75,31 +82,33 @@ class ElectroAppBar extends StatelessWidget implements PreferredSizeWidget {
             ],
           ),
 
-          const SizedBox(height: 14),
-
-          // ── Fila 2: Título + Búsqueda ──────────────────────────
-          Row(
-            children: [
-              Text(title, style: AppTheme.pageTitle),
-              if (showSearch) ...[
-                const SizedBox(width: 16),
-                Expanded(child: _SearchBar(hint: searchHint, onChanged: onSearch)),
+          // ── Fila 2: Título + Búsqueda (solo si hay contenido) ──
+          if (!_soloLogo) ...[
+            const SizedBox(height: 14),
+            Row(
+              children: [
+                if (title.isNotEmpty) Text(title, style: AppTheme.pageTitle),
+                if (showSearch) ...[
+                  if (title.isNotEmpty) const SizedBox(width: 16),
+                  Expanded(
+                    child: _SearchBar(hint: searchHint, onChanged: onSearch),
+                  ),
+                ],
               ],
-            ],
-          ),
+            ),
+          ],
         ],
       ),
     );
   }
 }
 
-// ─── Logo ────────────────────────────────────────────────────────────────────
+// ─── Logo ─────────────────────────────────────────────────────────────────────
 class _Logo extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Row(
       children: [
-        // Ícono con fondo amarillo claro
         Container(
           width: 36,
           height: 36,
@@ -150,7 +159,7 @@ class _Avatar extends StatelessWidget {
   }
 }
 
-// ─── SearchBar ───────────────────────────────────────────────────────────────
+// ─── SearchBar ────────────────────────────────────────────────────────────────
 class _SearchBar extends StatelessWidget {
   final String hint;
   final ValueChanged<String>? onChanged;
@@ -164,7 +173,10 @@ class _SearchBar extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppTheme.surface,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: AppTheme.primary.withOpacity(0.5), width: 1.5),
+        border: Border.all(
+          color: AppTheme.primary.withOpacity(0.5),
+          width: 1.5,
+        ),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.04),
@@ -179,7 +191,11 @@ class _SearchBar extends StatelessWidget {
         decoration: InputDecoration(
           hintText: hint,
           hintStyle: const TextStyle(fontSize: 14, color: AppTheme.textMuted),
-          prefixIcon: const Icon(Icons.search_rounded, color: AppTheme.primary, size: 20),
+          prefixIcon: const Icon(
+            Icons.search_rounded,
+            color: AppTheme.primary,
+            size: 20,
+          ),
           border: InputBorder.none,
           contentPadding: const EdgeInsets.symmetric(vertical: 10),
           isDense: true,

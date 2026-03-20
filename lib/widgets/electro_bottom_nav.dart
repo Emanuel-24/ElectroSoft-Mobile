@@ -203,8 +203,9 @@ class ElectroNavItem {
           activeIcon: Icons.inventory_2_rounded,
         ),
         ElectroNavItem(
-          label: 'Más',
-          icon: Icons.more_horiz_rounded,
+          label: 'Perfil',
+          icon: Icons.person_outline_rounded,
+          activeIcon: Icons.person_rounded,
         ),
       ];
 }

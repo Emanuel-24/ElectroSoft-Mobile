@@ -120,9 +120,9 @@ class ElectroNavItem {
       activeIcon: Icons.people_rounded,
     ),
     ElectroNavItem(
-      label: 'Roles',
-      icon: Icons.admin_panel_settings_outlined,
-      activeIcon: Icons.admin_panel_settings_rounded,
+      label: 'Compras',
+      icon: Icons.shopping_cart_outlined,
+      activeIcon: Icons.shopping_cart_rounded,
     ),
     ElectroNavItem(
       label: 'Productos',

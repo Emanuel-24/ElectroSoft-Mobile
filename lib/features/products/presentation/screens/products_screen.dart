@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import '../theme/app_theme.dart';
-import '../widgets/widgets.dart';
+import '../../../../core/theme/app_theme.dart';
+import '../../../../shared/widgets/widgets.dart';
 
 class _Producto {
   final String sku;

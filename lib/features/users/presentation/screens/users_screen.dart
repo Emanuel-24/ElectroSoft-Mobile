@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'usuario_detalle.dart';
+import 'user_detail_screen.dart';
 
 // ─── Modelo ───────────────────────────────────────────────────────────────────
 
@@ -22,16 +22,36 @@ class Usuario {
 // ─── Datos de ejemplo ─────────────────────────────────────────────────────────
 
 const _usuarios = [
-  Usuario(nombre: 'Juan Pérez',     rol: 'Admin',    ultimoAcceso: 'Hoy, 09:30 AM',  estado: EstadoUsuario.activo),
-  Usuario(nombre: 'María González', rol: 'Empleado', ultimoAcceso: 'Ayer, 18:45 PM', estado: EstadoUsuario.activo),
-  Usuario(nombre: 'Carlos Ruiz',    rol: 'Cliente',  ultimoAcceso: 'Hace 5 días',    estado: EstadoUsuario.inactivo),
-  Usuario(nombre: 'Ana López',      rol: 'Empleado', ultimoAcceso: 'Hace 2 horas',   estado: EstadoUsuario.activo),
+  Usuario(
+    nombre: 'Juan Pérez',
+    rol: 'Admin',
+    ultimoAcceso: 'Hoy, 09:30 AM',
+    estado: EstadoUsuario.activo,
+  ),
+  Usuario(
+    nombre: 'María González',
+    rol: 'Empleado',
+    ultimoAcceso: 'Ayer, 18:45 PM',
+    estado: EstadoUsuario.activo,
+  ),
+  Usuario(
+    nombre: 'Carlos Ruiz',
+    rol: 'Cliente',
+    ultimoAcceso: 'Hace 5 días',
+    estado: EstadoUsuario.inactivo,
+  ),
+  Usuario(
+    nombre: 'Ana López',
+    rol: 'Empleado',
+    ultimoAcceso: 'Hace 2 horas',
+    estado: EstadoUsuario.activo,
+  ),
 ];
 
 // ─── Colores ──────────────────────────────────────────────────────────────────
 
-const _verde    = Color(0xFF4CAF50);
-const _gris     = Color(0xFF9E9E9E);
+const _verde = Color(0xFF4CAF50);
+const _gris = Color(0xFF9E9E9E);
 const _amarillo = Color(0xFFFFC107);
 const _avatarBg = Color(0xFFBDBDBD);
 
@@ -45,7 +65,11 @@ class UsuariosScreen extends StatelessWidget {
     if (query.isEmpty) return _usuarios;
     final q = query.toLowerCase();
     return _usuarios
-        .where((u) => u.nombre.toLowerCase().contains(q) || u.rol.toLowerCase().contains(q))
+        .where(
+          (u) =>
+              u.nombre.toLowerCase().contains(q) ||
+              u.rol.toLowerCase().contains(q),
+        )
         .toList();
   }
 
@@ -105,7 +129,10 @@ class _UsuarioCard extends StatelessWidget {
                 // Contenido
                 Expanded(
                   child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 14,
+                      vertical: 12,
+                    ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -117,17 +144,23 @@ class _UsuarioCard extends StatelessWidget {
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Text(usuario.nombre,
-                                      style: const TextStyle(
-                                          fontWeight: FontWeight.w600,
-                                          fontSize: 15,
-                                          color: Colors.black87)),
+                                  Text(
+                                    usuario.nombre,
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.w600,
+                                      fontSize: 15,
+                                      color: Colors.black87,
+                                    ),
+                                  ),
                                   const SizedBox(height: 2),
-                                  Text(usuario.rol,
-                                      style: TextStyle(
-                                          fontSize: 13,
-                                          color: _rolColor,
-                                          fontWeight: FontWeight.w500)),
+                                  Text(
+                                    usuario.rol,
+                                    style: TextStyle(
+                                      fontSize: 13,
+                                      color: _rolColor,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
                                 ],
                               ),
                             ),
@@ -137,17 +170,23 @@ class _UsuarioCard extends StatelessWidget {
                         const SizedBox(height: 8),
                         const Divider(height: 1, color: Color(0xFFEEEEEE)),
                         const SizedBox(height: 8),
-                        Text('Último acceso',
-                            style: TextStyle(
-                                fontSize: 11,
-                                color: Colors.grey[500],
-                                fontStyle: FontStyle.italic)),
+                        Text(
+                          'Último acceso',
+                          style: TextStyle(
+                            fontSize: 11,
+                            color: Colors.grey[500],
+                            fontStyle: FontStyle.italic,
+                          ),
+                        ),
                         const SizedBox(height: 2),
-                        Text(usuario.ultimoAcceso,
-                            style: const TextStyle(
-                                fontSize: 13,
-                                fontWeight: FontWeight.w500,
-                                color: Colors.black87)),
+                        Text(
+                          usuario.ultimoAcceso,
+                          style: const TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w500,
+                            color: Colors.black87,
+                          ),
+                        ),
                       ],
                     ),
                   ),
@@ -179,9 +218,14 @@ class _Avatar extends StatelessWidget {
     return CircleAvatar(
       radius: 24,
       backgroundColor: _avatarBg,
-      child: Text(_iniciales,
-          style: const TextStyle(
-              color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16)),
+      child: Text(
+        _iniciales,
+        style: const TextStyle(
+          color: Colors.white,
+          fontWeight: FontWeight.bold,
+          fontSize: 16,
+        ),
+      ),
     );
   }
 }
@@ -195,8 +239,8 @@ class _EstadoBadge extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final activo = estado == EstadoUsuario.activo;
-    final color  = activo ? _verde : _gris;
-    final texto  = activo ? 'Activo' : 'Inactivo';
+    final color = activo ? _verde : _gris;
+    final texto = activo ? 'Activo' : 'Inactivo';
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
@@ -208,13 +252,19 @@ class _EstadoBadge extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           Container(
-              width: 7,
-              height: 7,
-              decoration: BoxDecoration(shape: BoxShape.circle, color: color)),
+            width: 7,
+            height: 7,
+            decoration: BoxDecoration(shape: BoxShape.circle, color: color),
+          ),
           const SizedBox(width: 4),
-          Text(texto,
-              style: TextStyle(
-                  fontSize: 11, color: color, fontWeight: FontWeight.w600)),
+          Text(
+            texto,
+            style: TextStyle(
+              fontSize: 11,
+              color: color,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
         ],
       ),
     );

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import '../widgets/widgets.dart';
-import '../theme/app_theme.dart';
-import 'usuarios.dart';
+import '../../../../shared/widgets/widgets.dart';
+import '../../../../core/theme/app_theme.dart';
+import 'users_screen.dart';
 
 class UsuarioDetalleScreen extends StatelessWidget {
   final Usuario usuario;

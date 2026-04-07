@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../theme/app_theme.dart';
+import '../../../../core/theme/app_theme.dart';
 import 'role_detail_screen.dart';
 
 class RolesScreen extends StatelessWidget {

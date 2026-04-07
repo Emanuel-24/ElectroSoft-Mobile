@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import '../theme/app_theme.dart';
-import 'productos_screen.dart';
+import '../../../../core/theme/app_theme.dart';
+import 'products_screen.dart';
 
 class CatProductosScreen extends StatefulWidget {
   const CatProductosScreen({super.key});

@@ -1,3 +1,4 @@
+import 'package:electrosoft/features/dashboard/presentation/screens/dashboard_screen.dart';
 import 'package:flutter/material.dart';
 
 // Importaciones de tus pantallas (ajusta las rutas si cambian)
@@ -5,7 +6,7 @@ import '../../features/products/presentation/screens/cat_products_screen.dart';
 import '../../features/roles/presentation/screens/roles_screen.dart';
 import '../../features/profile/presentation/screens/edit_profile_screen.dart';
 import '../../features/users/presentation/screens/users_screen.dart';
-import '../../features/users/domain/entities/user_profile.dart';
+import '../../features/profile/domain/entities/user_profile.dart';
 import '../widgets/widgets.dart';
 
 class MainShell extends StatefulWidget {
@@ -31,11 +32,11 @@ class _MainShellState extends State<MainShell> {
 
   // Configuración centralizada de las páginas
   static const List<_PageConfig> _pages = [
-    _PageConfig(title: 'Dashboard'),
+    _PageConfig(title: '', showSearch: false,),
     _PageConfig(title: 'Usuarios', searchHint: 'Buscar usuario...'),
     _PageConfig(title: 'Roles', searchHint: 'Buscar rol...'),
-    _PageConfig(title: 'Productos', searchHint: 'Buscar producto...'),
-    _PageConfig(title: 'Mi Perfil', showSearch: false),
+    _PageConfig(title: 'Categorias de productos', showSearch: false),
+    _PageConfig(title: '', showSearch: false),
   ];
 
   @override
@@ -60,7 +61,7 @@ class _MainShellState extends State<MainShell> {
         initialIndex: _currentIndex,
         onTabChanged: (index) => setState(() {
           _currentIndex = index;
-          _searchQuery = ''; // Limpiamos búsqueda al cambiar de pestaña
+          _searchQuery = '';
         }),
       ),
     );
@@ -69,13 +70,14 @@ class _MainShellState extends State<MainShell> {
   Widget _buildCurrentPage() {
     switch (_currentIndex) {
       case 0:
-        return const Center(child: Text('Dashboard - Próximamente'));
+        return DashboardScreen();
       case 1:
-        return UsuariosScreen();
+        // Asegúrate de que UsuariosScreen reciba un parámetro opcional 'searchQuery'
+        return UsuariosScreen(searchQuery: _searchQuery);
       case 2:
-        return RolesScreen();
+        return RolesScreen(searchQuery: _searchQuery);
       case 3:
-        return CatProductosScreen();
+        return CatProductosScreen(searchQuery: _searchQuery);
       case 4:
         return EditProfileScreen(
           profile: _userProfile,

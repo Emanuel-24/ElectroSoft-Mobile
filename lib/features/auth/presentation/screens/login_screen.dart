@@ -47,7 +47,7 @@ class _LoginScreenState extends State<LoginScreen> {
           ),
         ),
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 150),
+          padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 120),
           child: Column(
             children: [
               const Row(
@@ -84,7 +84,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 'Login',
                 style: TextStyle(fontSize: 30, fontWeight: FontWeight.w400),
               ),
-              const SizedBox(height: 100),
+              const SizedBox(height: 70),
 
               // Campo de Email
               _buildTextField(
@@ -149,7 +149,7 @@ class _LoginScreenState extends State<LoginScreen> {
         borderRadius: BorderRadius.circular(10),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 10,
             offset: const Offset(0, 5),
           ),

@@ -1,42 +1,10 @@
 import 'package:flutter/material.dart';
 import '../../core/theme/app_theme.dart';
 
-/// ─────────────────────────────────────────────────────────────────────────────
-/// ElectroAppBar
-///
-/// Navbar reutilizable de ElectroSoft. Implementa [PreferredSizeWidget]
-/// para usarse directamente como [Scaffold.appBar].
-///
-/// PARÁMETROS:
-///   - [title]       Título de la pantalla actual (ej. "Gestión de roles").
-///                   Si es vacío y [showSearch] es false, solo se muestra
-///                   la fila del logo (altura reducida automáticamente).
-///   - [showSearch]  Muestra u oculta la barra de búsqueda (default: true).
-///   - [searchHint]  Placeholder del campo de búsqueda.
-///   - [onSearch]    Callback que recibe el texto escrito.
-///   - [onAvatarTap] Callback al tocar el avatar del usuario.
-///   - [avatarUrl]   URL de la foto del usuario (null = ícono genérico).
-///
-/// USO BÁSICO:
-///   Scaffold(
-///     appBar: ElectroAppBar(title: 'Mi pantalla'),
-///     body: ...,
-///   )
-///
-/// USO COMPLETO:
-///   Scaffold(
-///     appBar: ElectroAppBar(
-///       title: 'Gestión de roles',
-///       searchHint: 'Buscar rol...',
-///       onSearch: (value) => setState(() => _query = value),
-///       onAvatarTap: () => Navigator.pushNamed(context, '/profile'),
-///     ),
-///     body: ...,
-///   )
-/// ─────────────────────────────────────────────────────────────────────────────
 class ElectroAppBar extends StatelessWidget implements PreferredSizeWidget {
   final String title;
   final bool showSearch;
+  final bool showBack;
   final String searchHint;
   final ValueChanged<String>? onSearch;
   final VoidCallback? onAvatarTap;
@@ -46,17 +14,17 @@ class ElectroAppBar extends StatelessWidget implements PreferredSizeWidget {
     super.key,
     required this.title,
     this.showSearch = true,
+    this.showBack = false,
     this.searchHint = 'Buscar...',
     this.onSearch,
     this.onAvatarTap,
     this.avatarUrl,
   });
 
-  // Solo muestra la fila del logo cuando no hay título ni búsqueda
   bool get _soloLogo => title.isEmpty && !showSearch;
 
   @override
-  Size get preferredSize => Size.fromHeight(_soloLogo ? 72 : 130);
+  Size get preferredSize => Size.fromHeight(_soloLogo ? 80 : 140);
 
   @override
   Widget build(BuildContext context) {
@@ -64,29 +32,33 @@ class ElectroAppBar extends StatelessWidget implements PreferredSizeWidget {
 
     return Container(
       color: AppTheme.surface,
-      padding: EdgeInsets.only(
-        top: topPadding + 8,
-        left: 20,
-        right: 20,
-        bottom: 12,
-      ),
+      padding: EdgeInsets.fromLTRB(20, topPadding + 20, 20, 10),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          // ── Fila 1: Logo + Avatar ──────────────────────────────
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              _Logo(),
+              const _Logo(),
               _Avatar(url: avatarUrl, onTap: onAvatarTap),
             ],
           ),
-
-          // ── Fila 2: Título + Búsqueda (solo si hay contenido) ──
           if (!_soloLogo) ...[
-            const SizedBox(height: 14),
+            const SizedBox(height: 16),
             Row(
               children: [
+                if (showBack) ...[
+                  IconButton(
+                    onPressed: () => Navigator.pop(context),
+                    icon: const Icon(
+                      Icons.arrow_back_ios_new_rounded,
+                      size: 20,
+                    ),
+                    padding: EdgeInsets.zero,
+                    constraints: const BoxConstraints(),
+                  ),
+                  const SizedBox(width: 12),
+                ],
                 if (title.isNotEmpty) Text(title, style: AppTheme.pageTitle),
                 if (showSearch) ...[
                   if (title.isNotEmpty) const SizedBox(width: 16),
@@ -103,8 +75,8 @@ class ElectroAppBar extends StatelessWidget implements PreferredSizeWidget {
   }
 }
 
-// ─── Logo ─────────────────────────────────────────────────────────────────────
 class _Logo extends StatelessWidget {
+  const _Logo();
   @override
   Widget build(BuildContext context) {
     return Row(
@@ -136,11 +108,9 @@ class _Logo extends StatelessWidget {
   }
 }
 
-// ─── Avatar ───────────────────────────────────────────────────────────────────
 class _Avatar extends StatelessWidget {
   final String? url;
   final VoidCallback? onTap;
-
   const _Avatar({this.url, this.onTap});
 
   @override
@@ -159,11 +129,9 @@ class _Avatar extends StatelessWidget {
   }
 }
 
-// ─── SearchBar ────────────────────────────────────────────────────────────────
 class _SearchBar extends StatelessWidget {
   final String hint;
   final ValueChanged<String>? onChanged;
-
   const _SearchBar({required this.hint, this.onChanged});
 
   @override
@@ -174,12 +142,12 @@ class _SearchBar extends StatelessWidget {
         color: AppTheme.surface,
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
-          color: AppTheme.primary.withOpacity(0.5),
+          color: AppTheme.primary.withValues(alpha: 0.1),
           width: 1.5,
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withValues(alpha: 0.04),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),

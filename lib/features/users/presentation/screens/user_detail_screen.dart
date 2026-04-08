@@ -1,41 +1,97 @@
 import 'package:flutter/material.dart';
 import '../../../../shared/widgets/widgets.dart';
-import '../../../../core/theme/app_theme.dart';
-import 'users_screen.dart';
+import '../../domain/entities/user.dart';
+import '../widgets/user_detail_widgets.dart';
 
 class UsuarioDetalleScreen extends StatelessWidget {
   final Usuario usuario;
+  final String email = "usuario@electrosoft.com";
+  final String telefono = "+57 300 123 4567";
   const UsuarioDetalleScreen({super.key, required this.usuario});
 
   @override
   Widget build(BuildContext context) {
+    final bool esActivo = usuario.estado == EstadoUsuario.activo;
+
     return Scaffold(
-      appBar: ElectroAppBar(
-        title: 'Usuarios',
-        showSearch: false,
-        onAvatarTap: () {},
-      ),
-      body: Center(
+      backgroundColor: const Color(0xFFF5F7F9), // Tu gris de fondo
+      appBar: ElectroAppBar(title: 'Detalle de Usuario', showSearch: false, showBack: true,),
+      body: SingleChildScrollView(
         child: Column(
-          mainAxisSize: MainAxisSize.min,
           children: [
-            const Text(
-              'Vista detalle del usuario',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
-            ),
-            const SizedBox(height: 24),
-            ElevatedButton(
-              onPressed: () => Navigator.pop(context),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppTheme.primary,
-                foregroundColor: Colors.black87,
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(20)),
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
+            // --- HEADER CON AVATAR ---
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(vertical: 30),
+              decoration: const BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.only(
+                  bottomLeft: Radius.circular(30),
+                  bottomRight: Radius.circular(30),
+                ),
               ),
-              child: const Text('Volver',
-                  style: TextStyle(fontWeight: FontWeight.w600)),
+              child: Column(
+                children: [
+                  BigAvatar(nombre: usuario.nombre),
+                  const SizedBox(height: 16),
+                  Text(
+                    usuario.nombre,
+                    style: const TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF1A1A1A),
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  RoleChip(rol: usuario.rol),
+                ],
+              ),
+            ),
+
+            Padding(
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Información General',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 12),
+
+                  // --- TARJETA DE DATOS ---
+                  InfoCard(
+                    items: [
+                      InfoItem(
+                        icon: Icons.badge_outlined,
+                        label: 'Rol del sistema',
+                        value: usuario.rol,
+                      ),
+                      InfoItem(
+                        icon: Icons.email_outlined,
+                        label: 'Correo electrónico',
+                        value: email,
+                      ),
+                      InfoItem(
+                        icon: Icons.phone_android_outlined,
+                        label: 'Número de teléfono',
+                        value: telefono,
+                      ),
+                      InfoItem(
+                        icon: Icons.history_rounded,
+                        label: 'Último acceso registrado',
+                        value: usuario.ultimoAcceso,
+                      ),
+                      InfoItem(
+                        icon: Icons.circle,
+                        iconColor: esActivo ? Colors.green : Colors.grey,
+                        label: 'Estado de la cuenta',
+                        value: esActivo ? 'Activo' : 'Inactivo',
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             ),
           ],
         ),
@@ -43,9 +99,7 @@ class UsuarioDetalleScreen extends StatelessWidget {
       bottomNavigationBar: ElectroBottomNav(
         items: ElectroNavItem.defaults(),
         initialIndex: 1,
-        onTabChanged: (index) {
-          Navigator.pop(context);
-        },
+        onTabChanged: (index) => Navigator.pop(context),
       ),
     );
   }

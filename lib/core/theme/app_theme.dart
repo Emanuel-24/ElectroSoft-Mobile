@@ -9,6 +9,10 @@ class AppTheme {
   static const Color surface = Colors.white;
   static const Color divider = Color(0xFFF0F0F0);
   static const Color avatarBg = Color(0xFFE07B39);      // Orange avatar
+  static const Color verde = Color(0xFF4CAF50);
+  static const Color gris = Color(0xFF9E9E9E);
+  static const Color amarillo = Color(0xFFFFC107);
+  static const Color avatarBg2 = Color(0xFFBDBDBD);
 
   // ── Text Styles ───────────────────────────────────────────────
   static const TextStyle logoElectro = TextStyle(

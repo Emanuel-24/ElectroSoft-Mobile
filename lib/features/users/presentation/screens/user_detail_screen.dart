@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../../../shared/widgets/widgets.dart';
 import '../../domain/entities/user.dart';
 import '../widgets/user_detail_widgets.dart';
+import '../../../../shared/widgets/main_shell.dart';
 
 class UsuarioDetalleScreen extends StatelessWidget {
   final Usuario usuario;
@@ -15,7 +16,11 @@ class UsuarioDetalleScreen extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: const Color(0xFFF5F7F9), // Tu gris de fondo
-      appBar: ElectroAppBar(title: 'Detalle de Usuario', showSearch: false, showBack: true,),
+      appBar: ElectroAppBar(
+        title: 'Detalle de Usuario',
+        showSearch: false,
+        showBack: true,
+      ),
       body: SingleChildScrollView(
         child: Column(
           children: [
@@ -99,7 +104,12 @@ class UsuarioDetalleScreen extends StatelessWidget {
       bottomNavigationBar: ElectroBottomNav(
         items: ElectroNavItem.defaults(),
         initialIndex: 1,
-        onTabChanged: (index) => Navigator.pop(context),
+        onTabChanged: (index) {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (_) => MainShell(initialIndex: index)),
+          );
+        },
       ),
     );
   }

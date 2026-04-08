@@ -10,7 +10,9 @@ import '../../features/profile/domain/entities/user_profile.dart';
 import '../widgets/widgets.dart';
 
 class MainShell extends StatefulWidget {
-  const MainShell({super.key});
+  final int initialIndex;
+
+  const MainShell({super.key, this.initialIndex = 0});
 
   @override
   State<MainShell> createState() => _MainShellState();
@@ -19,6 +21,12 @@ class MainShell extends StatefulWidget {
 class _MainShellState extends State<MainShell> {
   int _currentIndex = 0;
   String _searchQuery = '';
+
+  @override
+  void initState() {
+    super.initState();
+    _currentIndex = widget.initialIndex;
+  }
 
   // Datos del perfil (Esto luego debería venir de un Provider o Backend)
   UserProfile _userProfile = const UserProfile(
@@ -32,7 +40,7 @@ class _MainShellState extends State<MainShell> {
 
   // Configuración centralizada de las páginas
   static const List<_PageConfig> _pages = [
-    _PageConfig(title: '', showSearch: false,),
+    _PageConfig(title: '', showSearch: false),
     _PageConfig(title: 'Usuarios', searchHint: 'Buscar usuario...'),
     _PageConfig(title: 'Roles', searchHint: 'Buscar rol...'),
     _PageConfig(title: 'Categorias de productos', showSearch: false),
@@ -72,7 +80,6 @@ class _MainShellState extends State<MainShell> {
       case 0:
         return DashboardScreen();
       case 1:
-        // Asegúrate de que UsuariosScreen reciba un parámetro opcional 'searchQuery'
         return UsuariosScreen(searchQuery: _searchQuery);
       case 2:
         return RolesScreen(searchQuery: _searchQuery);

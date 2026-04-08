@@ -32,10 +32,11 @@ class CatProductosScreen extends StatelessWidget {
           final categoria = _filtradas[index];
           return CategoriaCard(
             categoria: categoria,
-            onTap: () => Navigator.push(
+            onTap: () => Navigator.pushReplacement(
               context,
               MaterialPageRoute(
-                builder: (_) => ProductosScreen(categoria: categoria.nombre),
+                builder: (context) =>
+                    ProductosScreen(categoria: categoria.nombre),
               ),
             ),
           );

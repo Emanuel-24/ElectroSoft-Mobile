@@ -1,6 +1,6 @@
 import 'package:electrosoft/core/theme/app_theme.dart';
 import 'package:flutter/material.dart';
-import '../../domain/entities/compra.dart';
+import '../../domain/entities/shopping.dart';
 import 'package:intl/intl.dart';
 
 class DetalleCompraScreen extends StatelessWidget {

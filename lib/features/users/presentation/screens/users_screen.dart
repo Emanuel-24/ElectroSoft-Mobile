@@ -32,7 +32,7 @@ class UsuariosScreen extends StatelessWidget {
 
         return UsuarioCard(
           usuario: usuario,
-          onTap: () => Navigator.pushReplacement(
+          onTap: () => Navigator.push(
             context,
             MaterialPageRoute(
               builder: (context) => UsuarioDetalleScreen(usuario: usuario),

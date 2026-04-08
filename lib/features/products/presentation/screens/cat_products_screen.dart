@@ -32,7 +32,7 @@ class CatProductosScreen extends StatelessWidget {
           final categoria = _filtradas[index];
           return CategoriaCard(
             categoria: categoria,
-            onTap: () => Navigator.pushReplacement(
+            onTap: () => Navigator.push(
               context,
               MaterialPageRoute(
                 builder: (context) =>

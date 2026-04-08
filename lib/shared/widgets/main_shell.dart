@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 
 // Importaciones de tus pantallas
 import '../../features/products/presentation/screens/cat_products_screen.dart';
-import '../../features/compras/presentation/screens/compras_screen.dart'; // ← AGREGAR
+import '../../features/shopping/presentation/screens/shopping_screen.dart'; // ← AGREGAR
 import '../../features/profile/presentation/screens/edit_profile_screen.dart';
 import '../../features/users/presentation/screens/users_screen.dart';
 import '../../features/profile/domain/entities/user_profile.dart';
@@ -44,7 +44,7 @@ class _MainShellState extends State<MainShell> {
     _PageConfig(title: 'Usuarios', searchHint: 'Buscar usuario...'), // Usuarios (1)    // Roles (2)
     _PageConfig(title: 'Compras', searchHint: 'Buscar compra...'), // Compras (3) ← NUEVO
     _PageConfig(title: 'Categorías de productos', showSearch: false), // Categorías (3) ← NUEVO
-    _PageConfig(title: 'Perfil', showSearch: false),              // Perfil (4)
+    _PageConfig(title: '', showSearch: false),              // Perfil (4)
   ];
 
   @override

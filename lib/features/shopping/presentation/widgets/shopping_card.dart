@@ -1,7 +1,7 @@
 import 'package:electrosoft/core/theme/app_theme.dart';
 import 'package:flutter/material.dart';
-import '../../domain/entities/compra.dart';
-import '../screens/detalle_compra_screen.dart';
+import '../../domain/entities/shopping.dart';
+import '../screens/shopping_detail_screen.dart';
 import 'package:intl/intl.dart';
 
 class CompraCard extends StatelessWidget {
@@ -173,28 +173,6 @@ class CompraCard extends StatelessWidget {
                     ],
                   ),
                 ],
-              ),
-              const SizedBox(height: 16),
-              const Divider(height: 1, thickness: 1),
-              const SizedBox(height: 12),
-              // Botón Ver detalles
-              Align(
-                alignment: Alignment.centerRight,
-                child: TextButton.icon(
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => DetalleCompraScreen(compra: compra),
-                      ),
-                    );
-                  },
-                  icon: const Icon(Icons.visibility_outlined, size: 18),
-                  label: const Text('Ver detalles'),
-                  style: TextButton.styleFrom(
-                    foregroundColor: AppTheme.primary,
-                  ),
-                ),
               ),
             ],
           ),

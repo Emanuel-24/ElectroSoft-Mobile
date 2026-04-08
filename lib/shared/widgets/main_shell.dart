@@ -1,9 +1,9 @@
 import 'package:electrosoft/features/dashboard/presentation/screens/dashboard_screen.dart';
 import 'package:flutter/material.dart';
 
-// Importaciones de tus pantallas (ajusta las rutas si cambian)
+// Importaciones de tus pantallas
 import '../../features/products/presentation/screens/cat_products_screen.dart';
-import '../../features/roles/presentation/screens/roles_screen.dart';
+import '../../features/compras/presentation/screens/compras_screen.dart'; // ← AGREGAR
 import '../../features/profile/presentation/screens/edit_profile_screen.dart';
 import '../../features/users/presentation/screens/users_screen.dart';
 import '../../features/profile/domain/entities/user_profile.dart';
@@ -28,7 +28,7 @@ class _MainShellState extends State<MainShell> {
     _currentIndex = widget.initialIndex;
   }
 
-  // Datos del perfil (Esto luego debería venir de un Provider o Backend)
+  // Datos del perfil
   UserProfile _userProfile = const UserProfile(
     fullName: 'Andres Camilo Santa',
     email: 'Andrescamilo@gmail.com',
@@ -40,11 +40,11 @@ class _MainShellState extends State<MainShell> {
 
   // Configuración centralizada de las páginas
   static const List<_PageConfig> _pages = [
-    _PageConfig(title: '', showSearch: false),
-    _PageConfig(title: 'Usuarios', searchHint: 'Buscar usuario...'),
-    _PageConfig(title: 'Roles', searchHint: 'Buscar rol...'),
-    _PageConfig(title: 'Categorias de productos', showSearch: false),
-    _PageConfig(title: '', showSearch: false),
+    _PageConfig(title: '', showSearch: false),                    // Dashboard (0)
+    _PageConfig(title: 'Usuarios', searchHint: 'Buscar usuario...'), // Usuarios (1)    // Roles (2)
+    _PageConfig(title: 'Compras', searchHint: 'Buscar compra...'), // Compras (3) ← NUEVO
+    _PageConfig(title: 'Categorías de productos', showSearch: false), // Categorías (3) ← NUEVO
+    _PageConfig(title: 'Perfil', showSearch: false),              // Perfil (4)
   ];
 
   @override
@@ -59,7 +59,6 @@ class _MainShellState extends State<MainShell> {
         onSearch: (value) => setState(() => _searchQuery = value),
         avatarUrl: _userProfile.avatarUrl,
         onAvatarTap: () {
-          // Opcional: Ir a la pestaña de perfil al tocar el avatar
           setState(() => _currentIndex = 4);
         },
       ),
@@ -82,9 +81,9 @@ class _MainShellState extends State<MainShell> {
       case 1:
         return UsuariosScreen(searchQuery: _searchQuery);
       case 2:
-        return RolesScreen(searchQuery: _searchQuery);
+        return ComprasScreen(searchQuery: _searchQuery);
       case 3:
-        return CatProductosScreen(searchQuery: _searchQuery);
+        return CatProductosScreen(searchQuery: _searchQuery); // ← Categorías de productos
       case 4:
         return EditProfileScreen(
           profile: _userProfile,
@@ -96,7 +95,7 @@ class _MainShellState extends State<MainShell> {
   }
 }
 
-// Clase de soporte privada para organizar las pestañas
+// Clase de soporte privada
 class _PageConfig {
   final String title;
   final String searchHint;

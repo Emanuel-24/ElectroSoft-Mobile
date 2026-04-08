@@ -13,13 +13,12 @@ class DashboardScreen extends StatelessWidget {
     final todosLosProductos = ProductosMock.porCategoria.values
         .expand((lista) => lista)
         .toList();
-    
+
     return todosLosProductos.where((p) => p.stock <= 10).length;
   }
 
   @override
   Widget build(BuildContext context) {
-    // 3. Guardamos el resultado en una variable para usarla en la UI
     final int numCriticos = _countStockCritico;
     return Scaffold(
       backgroundColor: const Color(0xFFF5F7F9),
@@ -99,15 +98,18 @@ class DashboardScreen extends StatelessWidget {
                         child: StatsCard(
                           title: 'Stock Crítico',
                           value: '$numCriticos',
-                          subtitle: numCriticos > 0 
-                              ? 'Requiere atención' 
+                          subtitle: numCriticos > 0
+                              ? 'Requiere atención'
                               : 'Todo en orden',
                           icon: Icons.inventory_2_outlined,
-                          accentColor: numCriticos > 0 ? Colors.red : Colors.green,
+                          accentColor: numCriticos > 0
+                              ? Colors.red
+                              : Colors.green,
                         ),
                       ),
                     ],
                   ),
+
                   const SizedBox(height: 32),
 
                   // Título Actividad
@@ -122,7 +124,14 @@ class DashboardScreen extends StatelessWidget {
                         ),
                       ),
                       TextButton(
-                        onPressed: () {},
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const NotificationsScreen(),
+                            ),
+                          );
+                        },
                         child: const Text(
                           'Ver todo',
                           style: TextStyle(color: Colors.orange),
@@ -145,6 +154,13 @@ class DashboardScreen extends StatelessWidget {
                     icon: Icons.person_add_outlined,
                     iconColor: Colors.blue,
                   ),
+                  const ActivityItem(
+                    title: 'Nuevo pedido #10235',
+                    subtitle: 'Cliente: Juan Santa',
+                    time: 'Hace 1h',
+                    icon: Icons.check_circle_outline,
+                    iconColor: Colors.green,
+                  ),
                 ],
               ),
             ),
@@ -159,7 +175,8 @@ class DashboardScreen extends StatelessWidget {
 class _NotificationBadge extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return InkWell( // <--- Agregamos InkWell para que sea "clicable"
+    return InkWell(
+      // <--- Agregamos InkWell para que sea "clicable"
       onTap: () {
         // ── Navegación a la pantalla de notificaciones ──
         Navigator.push(
@@ -167,7 +184,9 @@ class _NotificationBadge extends StatelessWidget {
           MaterialPageRoute(builder: (context) => const NotificationsScreen()),
         );
       },
-      borderRadius: BorderRadius.circular(12), // Para que el efecto de toque sea redondeado
+      borderRadius: BorderRadius.circular(
+        12,
+      ), // Para que el efecto de toque sea redondeado
       child: Stack(
         children: [
           Container(

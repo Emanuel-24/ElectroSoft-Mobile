@@ -29,10 +29,10 @@ class UsuariosScreen extends StatelessWidget {
       separatorBuilder: (context, index) => const SizedBox(height: 10),
       itemBuilder: (context, index) {
         final usuario = _filtrados[index];
-        
+
         return UsuarioCard(
           usuario: usuario,
-          onTap: () => Navigator.push(
+          onTap: () => Navigator.pushReplacement(
             context,
             MaterialPageRoute(
               builder: (context) => UsuarioDetalleScreen(usuario: usuario),

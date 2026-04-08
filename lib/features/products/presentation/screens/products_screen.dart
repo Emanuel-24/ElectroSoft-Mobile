@@ -4,6 +4,7 @@ import '../../../../shared/widgets/widgets.dart'; // Tu BottomNav y otros compar
 import '../../domain/entities/product.dart'; // Clase Producto
 import '../../data/data_sources/products_mock.dart'; // Clase ProductosMock
 import '../widgets/product_card.dart'; // Clase ProductoCard y EstadoVacio
+import '../../../../shared/widgets/main_shell.dart';
 
 class ProductosScreen extends StatefulWidget {
   final String categoria;
@@ -59,10 +60,12 @@ class _ProductosScreenState extends State<ProductosScreen> {
       // BottomNav para mantener la navegación global
       bottomNavigationBar: ElectroBottomNav(
         items: ElectroNavItem.defaults(),
-        initialIndex: 3, // Asumiendo que el índice 3 es Inventario/Productos
-        onTabChanged: (_) {
-          // Limpia la pila para volver al inicio del Tab al cambiar
-          Navigator.of(context).popUntil((route) => route.isFirst);
+        initialIndex: 3,
+        onTabChanged: (index) {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (_) => MainShell(initialIndex: index)),
+          );
         },
       ),
 
@@ -163,7 +166,7 @@ class _ProductosAppBar extends StatelessWidget {
               onChanged: onChanged,
               style: const TextStyle(fontSize: 14, color: AppTheme.textDark),
               decoration: InputDecoration(
-                hintText: 'Buscar por nombre o SKU...',
+                hintText: 'Buscar por nombre',
                 hintStyle: const TextStyle(color: AppTheme.textMuted),
                 prefixIcon: const Icon(
                   Icons.search_rounded,

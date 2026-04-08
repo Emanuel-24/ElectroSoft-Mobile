@@ -1,7 +1,7 @@
-import 'package:electrosoft/features/compras/data/data_sources/compras_mock.dart';
+import 'package:electrosoft/features/shopping/data/data_sources/shopping_mock.dart';
 import 'package:flutter/material.dart';
 import '../../../../core/theme/app_theme.dart';
-import '../widgets/compra_card.dart';
+import '../widgets/shopping_card.dart';
 
 class ComprasScreen extends StatelessWidget {
   final String? searchQuery;

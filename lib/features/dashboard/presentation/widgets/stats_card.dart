@@ -122,61 +122,38 @@ class _StatsCardState extends State<StatsCard> {
                             ),
                           const SizedBox(width: 8),
 
-                          // 👇 SELECTOR DE MES ESTILIZADO
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 10),
+                            height: 32,
+                            padding: const EdgeInsets.symmetric(horizontal: 8),
                             decoration: BoxDecoration(
-                              color: Colors.grey.shade50,
-                              borderRadius: BorderRadius.circular(12),
-                              border: Border.all(color: Colors.grey.shade200),
+                              color: const Color(0xFFFFF3CD),
+                              borderRadius: BorderRadius.circular(10),
+                              border: Border.all(
+                                color: Colors.orange.shade300,
+                                width: 1,
+                              ),
                             ),
-                            height: 30,
                             child: DropdownButtonHideUnderline(
                               child: DropdownButton<String>(
                                 value: selectedMonth,
+                                isDense: true,
                                 icon: const Icon(
-                                  Icons.keyboard_arrow_down,
-                                  size: 16,
-                                  color: AppTheme.textDark,
+                                  Icons.keyboard_arrow_down_rounded,
+                                  size: 18,
                                 ),
-                                elevation: 8,
-                                borderRadius: BorderRadius.circular(12),
-                                dropdownColor:
-                                    Colors.white, // Color del menú desplegable
-                                focusColor: Colors.transparent,
                                 style: const TextStyle(
-                                  fontSize: 11,
-                                  color: AppTheme.textDark,
-                                  fontWeight: FontWeight.bold,
+                                  fontSize: 12,
+                                  color: Colors.black87,
+                                  fontWeight: FontWeight.w500,
                                 ),
-                                onChanged: (String? newValue) {
-                                  if (newValue != null) {
-                                    setState(() => selectedMonth = newValue);
-                                  }
-                                },
-                                // El secreto del "hover" y contraste está en el mapping de los items:
-                                items: months.map<DropdownMenuItem<String>>((
-                                  String value,
-                                ) {
-                                  return DropdownMenuItem<String>(
-                                    value: value,
-                                    child: Container(
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 8,
-                                        vertical: 4,
-                                      ),
-                                      decoration: BoxDecoration(
-                                        borderRadius: BorderRadius.circular(6),
-                                      ),
-                                      child: Text(value),
-                                    ),
+                                items: months.map((mes) {
+                                  return DropdownMenuItem(
+                                    value: mes,
+                                    child: Text(mes),
                                   );
                                 }).toList(),
-                                // Propiedad para el efecto visual al seleccionar
-                                selectedItemBuilder: (BuildContext context) {
-                                  return months.map<Widget>((String item) {
-                                    return Center(child: Text(item));
-                                  }).toList();
+                                onChanged: (value) {
+                                  setState(() => selectedMonth = value!);
                                 },
                               ),
                             ),

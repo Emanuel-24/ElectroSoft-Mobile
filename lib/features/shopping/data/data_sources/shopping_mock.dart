@@ -1,4 +1,4 @@
-import '../../domain/entities/compra.dart';
+import '../../domain/entities/shopping.dart';
 
 class ComprasMock {
   static final List<Compra> compras = [

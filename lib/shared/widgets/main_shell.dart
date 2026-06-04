@@ -43,7 +43,7 @@ class _MainShellState extends State<MainShell> {
     _PageConfig(title: '', showSearch: false),                    // Dashboard (0)
     _PageConfig(title: 'Usuarios', searchHint: 'Buscar usuario...'), // Usuarios (1)    // Roles (2)
     _PageConfig(title: 'Compras', searchHint: 'Buscar compra...'), // Compras (3) ← NUEVO
-    _PageConfig(title: 'Categorías de productos', showSearch: false), // Categorías (3) ← NUEVO
+    _PageConfig(title: 'Categorías de productos', searchHint: 'Buscar categoría...'), // Categorías (3) ← NUEVO
     _PageConfig(title: '', showSearch: false),              // Perfil (4)
   ];
 

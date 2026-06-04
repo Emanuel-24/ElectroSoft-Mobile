@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import '../../domain/entities/product.dart';
+import '../../domain/entities/product.dart'; // ← Apuntando a tu nueva entidad 'Product'
 import '../../../../core/theme/app_theme.dart';
 import 'package:intl/intl.dart';
 
 class ProductDetailScreen extends StatelessWidget {
-  final Producto producto;
+  final Product producto; // ← Cambiado de 'Producto' a 'Product'
 
   const ProductDetailScreen({super.key, required this.producto});
 
@@ -46,7 +46,7 @@ class ProductDetailScreen extends StatelessWidget {
               child: Column(
                 children: [
                   Text(
-                    producto.nombre,
+                    producto.name, // ← Cambiado de .nombre a .name
                     textAlign: TextAlign.center,
                     style: const TextStyle(
                       fontSize: 24,
@@ -62,8 +62,8 @@ class ProductDetailScreen extends StatelessWidget {
                       borderRadius: BorderRadius.circular(20),
                     ),
                     child: Text(
-                      producto.categoria.toUpperCase(),
-                      style: TextStyle(
+                      producto.categoryName.toUpperCase(), // ← Cambiado de .categoria a .categoryName
+                      style: const TextStyle( // ← Removido const de arriba para evitar conflicto si se requiere dinámico
                         fontSize: 13,
                         fontWeight: FontWeight.bold,
                         color: AppTheme.primary,
@@ -76,7 +76,7 @@ class ProductDetailScreen extends StatelessWidget {
             
             const SizedBox(height: 16),
             
-            // Información General (formato lista vertical, sin fondo gris)
+            // Información General
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Card(
@@ -101,31 +101,30 @@ class ProductDetailScreen extends StatelessWidget {
                       ),
                       const Divider(height: 24, thickness: 1),
                       
-                      // Lista vertical SIN fondo gris
                       _buildInfoRow(
                         label: 'Precio',
-                        value: _formatearPrecio(producto.precio),
+                        value: _formatearPrecio(producto.price), // ← Mantiene .price
                       ),
                       const Divider(height: 1, thickness: 1),
                       _buildInfoRow(
                         label: 'Stock',
-                        value: '${producto.stock} unidades',
+                        value: '${producto.stock} unidades', // ← Mantiene .stock
                         valueColor: _obtenerColorStock(producto.stock),
                       ),
                       const Divider(height: 1, thickness: 1),
                       _buildInfoRow(
                         label: 'Serial',
-                        value: producto.serial.isEmpty ? 'No registrado' : producto.serial,
+                        value: producto.serial.isEmpty ? 'No registrado' : producto.serial, // ← Mantiene .serial
                       ),
                       const Divider(height: 1, thickness: 1),
                       _buildInfoRow(
                         label: 'Garantía',
-                        value: producto.garantia.isEmpty ? 'No especificada' : producto.garantia,
+                        value: producto.warranty.isEmpty ? 'No especificada' : producto.warranty, // ← Cambiado de .garantia a .warranty
                       ),
                       const Divider(height: 1, thickness: 1),
                       _buildInfoRow(
                         label: 'Categoría',
-                        value: producto.categoria,
+                        value: producto.categoryName, // ← Cambiado de .categoria a .categoryName
                       ),
                     ],
                   ),
@@ -160,7 +159,7 @@ class ProductDetailScreen extends StatelessWidget {
                       ),
                       const Divider(height: 24, thickness: 1),
                       
-                      producto.caracteristicas.isEmpty
+                      producto.characteristics.isEmpty // ← Cambiado de .caracteristicas a .characteristics
                           ? const Center(
                               child: Padding(
                                 padding: EdgeInsets.all(32),
@@ -197,7 +196,7 @@ class ProductDetailScreen extends StatelessWidget {
     );
   }
 
-  // Widget para fila de información (estilo lista, sin fondo gris)
+  // Widget para fila de información
   Widget _buildInfoRow({
     required String label,
     required String value,
@@ -259,12 +258,12 @@ class ProductDetailScreen extends StatelessWidget {
               _buildTableCell('Valor', isHeader: true),
             ],
           ),
-          // Filas de características
-          ...producto.caracteristicas.map((caract) => TableRow(
+          // Filas de características (Adaptado al objeto Feature)
+          ...producto.characteristics.map((caract) => TableRow(
                 children: [
-                  _buildTableCell(caract.caracteristica),
-                  _buildTableCell(caract.medida.isEmpty ? '-' : caract.medida),
-                  _buildTableCell(caract.valor),
+                  _buildTableCell(caract.name), // ← Cambiado de .caracteristica a .name
+                  _buildTableCell(caract.unit.isEmpty ? '-' : caract.unit), // ← Cambiado de .medida a .unit
+                  _buildTableCell(caract.value), // ← Cambiado de .valor a .value
                 ],
               )),
         ],

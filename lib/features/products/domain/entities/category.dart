@@ -1,13 +1,15 @@
-import 'package:flutter/widgets.dart';
+class Category {
+  final String id;
+  final String name;
+  final String description;
+  final bool status;
+  final int productsCount;
 
-class Categoria {
-  final String nombre;
-  final int cantidad;
-  final IconData icono;
-
-  const Categoria({
-    required this.nombre,
-    required this.cantidad,
-    required this.icono,
+  const Category({
+    required this.id,
+    required this.name,
+    required this.description,
+    required this.status,
+    required this.productsCount,
   });
 }

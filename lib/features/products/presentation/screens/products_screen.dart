@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../shared/widgets/widgets.dart'; // Tu BottomNav y otros compartidos
-import '../../domain/entities/product.dart'; // Clase Producto
-import '../../data/data_sources/products_mock.dart'; // Clase ProductosMock
+import '../../domain/entities/product.dart'; // Clase Product (Nueva)
 import '../widgets/product_card.dart'; // Clase ProductoCard y EstadoVacio
 import '../../../../shared/widgets/main_shell.dart';
+import '../../data/services/product_service.dart';
 
 class ProductosScreen extends StatefulWidget {
   final String categoria;
@@ -18,16 +18,52 @@ class ProductosScreen extends StatefulWidget {
 class _ProductosScreenState extends State<ProductosScreen> {
   String _query = '';
   final TextEditingController _ctrl = TextEditingController();
+  final ProductService _service = ProductService();
 
-  // Obtenemos los productos de la categoría seleccionada desde el Mock
-  List<Producto> get _todos =>
-      ProductosMock.porCategoria[widget.categoria] ?? [];
+  // Estados para controlar la carga del Backend
+  List<Product> _todosLosProductos = [];
+  bool _isLoading = true;
+  String? _errorMessage;
 
-  // Aplicamos el filtro de búsqueda por Nombre o SKU
-  List<Producto> get _filtrados {
-    if (_query.trim().isEmpty) return _todos;
+  @override
+  void initState() {
+    super.initState();
+    _cargarProductosDelBackend();
+  }
+
+  // Carga los productos asíncronamente desde el servicio una sola vez
+  Future<void> _cargarProductosDelBackend() async {
+    try {
+      setState(() {
+        _isLoading = true;
+        _errorMessage = null;
+      });
+
+      final productosApi = await _service.obtenerProductos();
+
+      // Filtramos en memoria para quedarnos solo con los de la categoría seleccionada
+      // Nota: Tu backend devuelve categoryName. Comparamos ignorando mayúsculas/minúsculas.
+      _todosLosProductos = productosApi
+          .where(
+            (p) =>
+                p.categoryName.trim().toLowerCase() ==
+                widget.categoria.trim().toLowerCase(),
+          )
+          .toList();
+    } catch (e) {
+      _errorMessage = 'Error al conectar con el servidor';
+    } finally {
+      setState(() => _isLoading = false);
+    }
+  }
+
+  // Aplicamos tu filtro de búsqueda local en tiempo real por el campo `.name`
+  List<Product> get _filtrados {
+    if (_query.trim().isEmpty) return _todosLosProductos;
     final q = _query.toLowerCase();
-    return _todos.where((p) => p.nombre.toLowerCase().contains(q)).toList();
+    return _todosLosProductos
+        .where((p) => p.name.toLowerCase().contains(q))
+        .toList();
   }
 
   @override
@@ -42,7 +78,6 @@ class _ProductosScreenState extends State<ProductosScreen> {
 
     return Scaffold(
       backgroundColor: Colors.white,
-      // Usamos PreferredSize para un AppBar personalizado con buscador
       appBar: PreferredSize(
         preferredSize: const Size.fromHeight(120),
         child: _ProductosAppBar(
@@ -57,7 +92,6 @@ class _ProductosScreenState extends State<ProductosScreen> {
         ),
       ),
 
-      // BottomNav para mantener la navegación global
       bottomNavigationBar: ElectroBottomNav(
         items: ElectroNavItem.defaults(),
         initialIndex: 3,
@@ -72,41 +106,73 @@ class _ProductosScreenState extends State<ProductosScreen> {
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Contador de resultados
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
-            child: Text(
-              '${productos.length} RESULTADOS ENCONTRADOS',
-              style: const TextStyle(
-                fontSize: 11,
-                fontWeight: FontWeight.w600,
-                color: AppTheme.textMuted,
-                letterSpacing: 0.5,
+          // 1. Manejo del Estado de Carga (Loading)
+          if (_isLoading)
+            const Expanded(child: Center(child: CircularProgressIndicator()))
+          // 2. Manejo del Estado de Error
+          else if (_errorMessage != null)
+            Expanded(
+              child: Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Icon(
+                      Icons.cloud_off_rounded,
+                      size: 48,
+                      color: Colors.redAccent,
+                    ),
+                    const SizedBox(height: 12),
+                    Text(
+                      _errorMessage!,
+                      style: const TextStyle(color: AppTheme.textMuted),
+                    ),
+                    const SizedBox(height: 12),
+                    ElevatedButton(
+                      onPressed: _cargarProductosDelBackend,
+                      child: const Text('Reintentar'),
+                    ),
+                  ],
+                ),
+              ),
+            )
+          // 3. Mostrar la interfaz si la data cargó correctamente
+          else ...[
+            // Contador de resultados
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
+              child: Text(
+                '${productos.length} RESULTADOS ENCONTRADOS',
+                style: const TextStyle(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w600,
+                  color: AppTheme.textMuted,
+                  letterSpacing: 0.5,
+                ),
               ),
             ),
-          ),
 
-          // Lista de productos o Estado Vacío
-          Expanded(
-            child: productos.isEmpty
-                ? EstadoVacio(query: _query)
-                : ListView.separated(
-                    padding: const EdgeInsets.fromLTRB(16, 4, 16, 100),
-                    itemCount: productos.length,
-                    separatorBuilder: (context, index) =>
-                        const SizedBox(height: 12),
-                    itemBuilder: (context, index) {
-                      return ProductoCard(producto: productos[index]);
-                    },
-                  ),
-          ),
+            // Lista de productos o Estado Vacío
+            Expanded(
+              child: productos.isEmpty
+                  ? EstadoVacio(query: _query)
+                  : ListView.separated(
+                      padding: const EdgeInsets.fromLTRB(16, 4, 16, 100),
+                      itemCount: productos.length,
+                      separatorBuilder: (context, index) =>
+                          const SizedBox(height: 12),
+                      itemBuilder: (context, index) {
+                        return ProductoCard(producto: productos[index]);
+                      },
+                    ),
+            ),
+          ],
         ],
       ),
     );
   }
 }
 
-// --- Widget Privado para el AppBar de esta pantalla ---
+// --- Widget Privado para el AppBar de esta pantalla (Se mantiene igual) ---
 class _ProductosAppBar extends StatelessWidget {
   final String titulo;
   final TextEditingController controller;
@@ -131,7 +197,6 @@ class _ProductosAppBar extends StatelessWidget {
       padding: EdgeInsets.fromLTRB(8, topPadding + 4, 16, 12),
       child: Column(
         children: [
-          // Fila Superior: Botón Atrás + Título
           Row(
             children: [
               IconButton(
@@ -150,11 +215,10 @@ class _ProductosAppBar extends StatelessWidget {
                   ),
                 ),
               ),
-              const SizedBox(width: 48), // Espaciador para centrar el título
+              const SizedBox(width: 48),
             ],
           ),
           const SizedBox(height: 8),
-          // Buscador Redondeado
           Container(
             height: 44,
             decoration: BoxDecoration(

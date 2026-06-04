@@ -24,7 +24,7 @@ class ElectroAppBar extends StatelessWidget implements PreferredSizeWidget {
   bool get _soloLogo => title.isEmpty && !showSearch;
 
   @override
-  Size get preferredSize => Size.fromHeight(_soloLogo ? 80 : 140);
+  Size get preferredSize => Size.fromHeight(_soloLogo ? 80 : 180);
 
   @override
   Widget build(BuildContext context) {
@@ -45,26 +45,33 @@ class ElectroAppBar extends StatelessWidget implements PreferredSizeWidget {
           ),
           if (!_soloLogo) ...[
             const SizedBox(height: 16),
-            Row(
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                if (showBack) ...[
-                  IconButton(
-                    onPressed: () => Navigator.pop(context),
-                    icon: const Icon(
-                      Icons.arrow_back_ios_new_rounded,
-                      size: 20,
-                    ),
-                    padding: EdgeInsets.zero,
-                    constraints: const BoxConstraints(),
-                  ),
-                  const SizedBox(width: 12),
-                ],
-                if (title.isNotEmpty) Text(title, style: AppTheme.pageTitle),
+                Row(
+                  children: [
+                    if (showBack) ...[
+                      IconButton(
+                        onPressed: () => Navigator.pop(context),
+                        icon: const Icon(
+                          Icons.arrow_back_ios_new_rounded,
+                          size: 20,
+                        ),
+                        padding: EdgeInsets.zero,
+                        constraints: const BoxConstraints(),
+                      ),
+                      const SizedBox(width: 12),
+                    ],
+
+                    if (title.isNotEmpty)
+                      Expanded(child: Text(title, style: AppTheme.pageTitle)),
+                  ],
+                ),
+
                 if (showSearch) ...[
-                  if (title.isNotEmpty) const SizedBox(width: 16),
-                  Expanded(
-                    child: _SearchBar(hint: searchHint, onChanged: onSearch),
-                  ),
+                  const SizedBox(height: 12),
+
+                  _SearchBar(hint: searchHint, onChanged: onSearch),
                 ],
               ],
             ),

@@ -4,22 +4,46 @@ import 'package:flutter/material.dart';
 import '../widgets/stats_card.dart';
 import '../widgets/activity_item.dart';
 import '../screens/notifications_screen.dart';
-import '../../../products/data/data_sources/products_mock.dart';
+import '../../../products/data/services/product_service.dart'; // ← Importamos tu servicio real
 
-class DashboardScreen extends StatelessWidget {
+class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
 
-  int get _countStockCritico {
-    final todosLosProductos = ProductosMock.porCategoria.values
-        .expand((lista) => lista)
-        .toList();
+  @override
+  State<DashboardScreen> createState() => _DashboardScreenState();
+}
 
-    return todosLosProductos.where((p) => p.stock <= 10).length;
+class _DashboardScreenState extends State<DashboardScreen> {
+  final ProductService _productService = ProductService();
+  int _numCriticos = 0;
+  bool _isLoadingStock = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _calcularStockCritico();
+  }
+
+  // Lógica asíncrona para obtener el stock crítico real del backend
+  Future<void> _calcularStockCritico() async {
+    try {
+      final productos = await _productService.obtenerProductos();
+      if (mounted) {
+        setState(() {
+          // Filtramos usando la propiedad real '.stock' de la entidad Product
+          _numCriticos = productos.where((p) => p.stock <= 10).length;
+          _isLoadingStock = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() => _isLoadingStock = false);
+      }
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    final int numCriticos = _countStockCritico;
     return Scaffold(
       backgroundColor: const Color(0xFFF5F7F9),
       body: Column(
@@ -84,7 +108,7 @@ class DashboardScreen extends StatelessWidget {
                   const SizedBox(height: 16),
                   Row(
                     children: [
-                      Expanded(
+                      const Expanded(
                         child: StatsCard(
                           title: 'Pedidos Pendientes',
                           value: '24',
@@ -93,16 +117,17 @@ class DashboardScreen extends StatelessWidget {
                           accentColor: Colors.blue,
                         ),
                       ),
-                      SizedBox(width: 16),
+                      const SizedBox(width: 16),
                       Expanded(
                         child: StatsCard(
                           title: 'Stock Crítico',
-                          value: '$numCriticos',
-                          subtitle: numCriticos > 0
+                          // Mostramos un guión o indicador pequeño si sigue cargando el número
+                          value: _isLoadingStock ? '...' : '$_numCriticos',
+                          subtitle: _numCriticos > 0
                               ? 'Requiere atención'
                               : 'Todo en orden',
                           icon: Icons.inventory_2_outlined,
-                          accentColor: numCriticos > 0
+                          accentColor: _numCriticos > 0
                               ? Colors.red
                               : Colors.green,
                         ),
@@ -176,17 +201,13 @@ class _NotificationBadge extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return InkWell(
-      // <--- Agregamos InkWell para que sea "clicable"
       onTap: () {
-        // ── Navegación a la pantalla de notificaciones ──
         Navigator.push(
           context,
           MaterialPageRoute(builder: (context) => const NotificationsScreen()),
         );
       },
-      borderRadius: BorderRadius.circular(
-        12,
-      ), // Para que el efecto de toque sea redondeado
+      borderRadius: BorderRadius.circular(12),
       child: Stack(
         children: [
           Container(

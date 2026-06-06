@@ -3,10 +3,10 @@ import '../../../../core/theme/app_theme.dart';
 import '../../domain/entities/category.dart';
 
 class CategoriaCard extends StatelessWidget {
-  final Categoria categoria;
+  final Category category;
   final VoidCallback onTap;
 
-  const CategoriaCard({super.key, required this.categoria, required this.onTap});
+  const CategoriaCard({super.key, required this.category, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -36,8 +36,8 @@ class CategoriaCard extends StatelessWidget {
                     color: AppTheme.primaryLight,
                     borderRadius: BorderRadius.circular(16),
                   ),
-                  child: Icon(
-                    categoria.icono,
+                  child: const Icon(
+                    Icons.category_outlined,
                     color: AppTheme.primary,
                     size: 40,
                   ),
@@ -45,7 +45,7 @@ class CategoriaCard extends StatelessWidget {
               ),
               const SizedBox(height: 8),
               Text(
-                categoria.nombre,
+                category.name,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: const TextStyle(
@@ -56,7 +56,7 @@ class CategoriaCard extends StatelessWidget {
               ),
               const SizedBox(height: 2),
               Text(
-                '${categoria.cantidad} productos',
+                '${category.productsCount} productos',
                 style: const TextStyle(fontSize: 12, color: AppTheme.textMuted),
               ),
             ],

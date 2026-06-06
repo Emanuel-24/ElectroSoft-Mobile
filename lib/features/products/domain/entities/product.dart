@@ -1,68 +1,39 @@
-class Producto {
-  final String nombre;
-  final String categoria;
+class Product {
+  final String id;
+  final String name;
+  final String categoryId;
+  final String categoryName;
+  final double price;
   final int stock;
-  final double precio;
   final String serial;
-  final String garantia;
-  final List<Caracteristica> caracteristicas;
+  final String warranty;
+  final bool status;
+  final List<Feature> characteristics;
 
-  const Producto({
-    required this.nombre,
-    required this.categoria,
+  const Product({
+    required this.id,
+    required this.name,
+    required this.categoryId,
+    required this.categoryName,
+    required this.price,
     required this.stock,
-    required this.precio,
-    this.serial = '',
-    this.garantia = '',
-    this.caracteristicas = const [],
+    required this.serial,
+    required this.warranty,
+    required this.status,
+    required this.characteristics,
   });
-
-  // Copiar producto con nuevos valores
-  Producto copyWith({
-    String? nombre,
-    String? categoria,
-    int? stock,
-    double? precio,
-    String? serial,
-    String? garantia,
-    List<Caracteristica>? caracteristicas,
-  }) {
-    return Producto(
-      nombre: nombre ?? this.nombre,
-      categoria: categoria ?? this.categoria,
-      stock: stock ?? this.stock,
-      precio: precio ?? this.precio,
-      serial: serial ?? this.serial,
-      garantia: garantia ?? this.garantia,
-      caracteristicas: caracteristicas ?? this.caracteristicas,
-    );
-  }
 }
 
-class Caracteristica {
-  final String caracteristica;
-  final String medida;
-  final String valor;
+class Feature {
+  final String name;
+  final String unit;
+  final String value;
+  final bool visible;
 
-  const Caracteristica({
-    required this.caracteristica,
-    required this.medida,
-    required this.valor,
+  const Feature({
+    required this.name,
+    required this.unit,
+    required this.value,
+    required this.visible,
   });
-
-  // Para convertir a Map (si necesitas JSON)
-  Map<String, dynamic> toJson() => {
-        'caracteristica': caracteristica,
-        'medida': medida,
-        'valor': valor,
-      };
-
-  // Para crear desde Map
-  factory Caracteristica.fromJson(Map<String, dynamic> json) {
-    return Caracteristica(
-      caracteristica: json['caracteristica'] as String,
-      medida: json['medida'] as String,
-      valor: json['valor'] as String,
-    );
-  }
 }

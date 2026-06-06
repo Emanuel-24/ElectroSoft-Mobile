@@ -7,8 +7,9 @@ class UsuarioCard extends StatelessWidget {
   final VoidCallback onTap;
   const UsuarioCard({super.key, required this.usuario, required this.onTap});
 
-  Color get _rolColor =>
-      usuario.rol.toLowerCase() == 'admin' ? AppTheme.amarillo : AppTheme.gris;
+  Color get _rolColor => usuario.roleName.toLowerCase().contains('admin')
+      ? AppTheme.amarillo
+      : AppTheme.gris;
 
   @override
   Widget build(BuildContext context) {
@@ -43,14 +44,14 @@ class UsuarioCard extends StatelessWidget {
                       children: [
                         Row(
                           children: [
-                            _Avatar(nombre: usuario.nombre),
+                            _Avatar(fullName: usuario.fullName),
                             const SizedBox(width: 12),
                             Expanded(
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
-                                    usuario.nombre,
+                                    usuario.fullName,
                                     style: const TextStyle(
                                       fontWeight: FontWeight.w600,
                                       fontSize: 15,
@@ -59,7 +60,7 @@ class UsuarioCard extends StatelessWidget {
                                   ),
                                   const SizedBox(height: 2),
                                   Text(
-                                    usuario.rol,
+                                    usuario.roleName,
                                     style: TextStyle(
                                       fontSize: 13,
                                       color: _rolColor,
@@ -69,7 +70,7 @@ class UsuarioCard extends StatelessWidget {
                                 ],
                               ),
                             ),
-                            _EstadoBadge(estado: usuario.estado),
+                            _EstadoBadge(isActive: usuario.isActive),
                           ],
                         ),
                         const SizedBox(height: 8),
@@ -85,7 +86,7 @@ class UsuarioCard extends StatelessWidget {
                         ),
                         const SizedBox(height: 2),
                         Text(
-                          usuario.ultimoAcceso,
+                          usuario.lastAccess,
                           style: const TextStyle(
                             fontSize: 13,
                             fontWeight: FontWeight.w500,
@@ -106,11 +107,11 @@ class UsuarioCard extends StatelessWidget {
 }
 
 class _Avatar extends StatelessWidget {
-  final String nombre;
-  const _Avatar({required this.nombre});
+  final String fullName;
+  const _Avatar({required this.fullName});
 
   String get _iniciales {
-    final p = nombre.trim().split(' ');
+    final p = fullName.trim().split(' ');
     return p.length >= 2
         ? '${p[0][0]}${p[1][0]}'.toUpperCase()
         : p[0][0].toUpperCase();
@@ -133,17 +134,14 @@ class _Avatar extends StatelessWidget {
   }
 }
 
-// ─── Badge de estado ──────────────────────────────────────────────────────────
-
 class _EstadoBadge extends StatelessWidget {
-  final EstadoUsuario estado;
-  const _EstadoBadge({required this.estado});
+  final bool isActive;
+  const _EstadoBadge({required this.isActive});
 
   @override
   Widget build(BuildContext context) {
-    final activo = estado == EstadoUsuario.activo;
-    final color = activo ? AppTheme.verde : AppTheme.gris;
-    final texto = activo ? 'Activo' : 'Inactivo';
+    final color = isActive ? AppTheme.verde : AppTheme.gris;
+    final texto = isActive ? 'Activo' : 'Inactivo';
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),

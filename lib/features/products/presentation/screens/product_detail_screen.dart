@@ -4,7 +4,7 @@ import '../../../../core/theme/app_theme.dart';
 import 'package:intl/intl.dart';
 
 class ProductDetailScreen extends StatelessWidget {
-  final Producto producto;
+  final Product producto;
 
   const ProductDetailScreen({super.key, required this.producto});
 
@@ -38,7 +38,6 @@ class ProductDetailScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Cabecera con fondo del mismo color que AppBar
             Container(
               width: double.infinity,
               color: AppTheme.primary,
@@ -46,7 +45,7 @@ class ProductDetailScreen extends StatelessWidget {
               child: Column(
                 children: [
                   Text(
-                    producto.nombre,
+                    producto.name,
                     textAlign: TextAlign.center,
                     style: const TextStyle(
                       fontSize: 24,
@@ -56,14 +55,17 @@ class ProductDetailScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 12),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 6,
+                    ),
                     decoration: BoxDecoration(
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(20),
                     ),
                     child: Text(
-                      producto.categoria.toUpperCase(),
-                      style: TextStyle(
+                      producto.categoryName.toUpperCase(),
+                      style: const TextStyle(
                         fontSize: 13,
                         fontWeight: FontWeight.bold,
                         color: AppTheme.primary,
@@ -73,10 +75,9 @@ class ProductDetailScreen extends StatelessWidget {
                 ],
               ),
             ),
-            
+
             const SizedBox(height: 16),
-            
-            // Información General (formato lista vertical, sin fondo gris)
+
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Card(
@@ -100,11 +101,10 @@ class ProductDetailScreen extends StatelessWidget {
                         ),
                       ),
                       const Divider(height: 24, thickness: 1),
-                      
-                      // Lista vertical SIN fondo gris
+
                       _buildInfoRow(
                         label: 'Precio',
-                        value: _formatearPrecio(producto.precio),
+                        value: _formatearPrecio(producto.price),
                       ),
                       const Divider(height: 1, thickness: 1),
                       _buildInfoRow(
@@ -115,27 +115,30 @@ class ProductDetailScreen extends StatelessWidget {
                       const Divider(height: 1, thickness: 1),
                       _buildInfoRow(
                         label: 'Serial',
-                        value: producto.serial.isEmpty ? 'No registrado' : producto.serial,
+                        value: producto.serial.isEmpty
+                            ? 'No registrado'
+                            : producto.serial,
                       ),
                       const Divider(height: 1, thickness: 1),
                       _buildInfoRow(
                         label: 'Garantía',
-                        value: producto.garantia.isEmpty ? 'No especificada' : producto.garantia,
+                        value: producto.warranty.isEmpty
+                            ? 'No especificada'
+                            : producto.warranty,
                       ),
                       const Divider(height: 1, thickness: 1),
                       _buildInfoRow(
                         label: 'Categoría',
-                        value: producto.categoria,
+                        value: producto.categoryName,
                       ),
                     ],
                   ),
                 ),
               ),
             ),
-            
+
             const SizedBox(height: 16),
-            
-            // Características Técnicas
+
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Card(
@@ -159,8 +162,8 @@ class ProductDetailScreen extends StatelessWidget {
                         ),
                       ),
                       const Divider(height: 24, thickness: 1),
-                      
-                      producto.caracteristicas.isEmpty
+
+                      producto.characteristics.isEmpty
                           ? const Center(
                               child: Padding(
                                 padding: EdgeInsets.all(32),
@@ -176,12 +179,12 @@ class ProductDetailScreen extends StatelessWidget {
                 ),
               ),
             ),
-            
+
             const SizedBox(height: 80),
           ],
         ),
       ),
-      
+
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => Navigator.pop(context),
         icon: const Icon(Icons.arrow_back, size: 20),
@@ -189,15 +192,12 @@ class ProductDetailScreen extends StatelessWidget {
         backgroundColor: Colors.white,
         foregroundColor: AppTheme.primary,
         elevation: 4,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(30),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
     );
   }
 
-  // Widget para fila de información (estilo lista, sin fondo gris)
   Widget _buildInfoRow({
     required String label,
     required String value,
@@ -238,17 +238,13 @@ class ProductDetailScreen extends StatelessWidget {
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
       child: Table(
-        border: TableBorder.all(
-          color: Colors.grey[300]!,
-          width: 1,
-        ),
+        border: TableBorder.all(color: Colors.grey[300]!, width: 1),
         columnWidths: const {
           0: FixedColumnWidth(140),
           1: FixedColumnWidth(100),
           2: FixedColumnWidth(160),
         },
         children: [
-          // Encabezado
           TableRow(
             decoration: BoxDecoration(
               color: AppTheme.primary.withValues(alpha: 0.08),
@@ -259,14 +255,15 @@ class ProductDetailScreen extends StatelessWidget {
               _buildTableCell('Valor', isHeader: true),
             ],
           ),
-          // Filas de características
-          ...producto.caracteristicas.map((caract) => TableRow(
-                children: [
-                  _buildTableCell(caract.caracteristica),
-                  _buildTableCell(caract.medida.isEmpty ? '-' : caract.medida),
-                  _buildTableCell(caract.valor),
-                ],
-              )),
+          ...producto.characteristics.map(
+            (caract) => TableRow(
+              children: [
+                _buildTableCell(caract.name),
+                _buildTableCell(caract.unit.isEmpty ? '-' : caract.unit),
+                _buildTableCell(caract.value),
+              ],
+            ),
+          ),
         ],
       ),
     );

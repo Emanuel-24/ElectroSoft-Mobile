@@ -2,20 +2,19 @@ import 'package:flutter/material.dart';
 import '../../domain/entities/product.dart';
 import '../../../../core/theme/app_theme.dart';
 import 'package:intl/intl.dart';
-import '../screens/product_detail_screen.dart'; // ← AGREGAR ESTA IMPORTACIÓN
+import '../screens/product_detail_screen.dart';
 
 class ProductoCard extends StatelessWidget {
-  final Producto producto;
+  final Product producto;
+
   const ProductoCard({super.key, required this.producto});
 
-  // Lógica para el color del stock
   Color _obtenerColorStock(int stock) {
     if (stock <= 10) return Colors.redAccent;
     if (stock <= 25) return Colors.orange;
     return const Color(0xFF4CAF50);
   }
 
-  // Lógica para formato de moneda (es_CO)
   String _formatearPrecio(double precio) {
     final formatCurrency = NumberFormat.currency(
       locale: 'es_CO',
@@ -27,7 +26,7 @@ class ProductoCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(  // ← ENVOLVER CON GestureDetector
+    return GestureDetector(
       onTap: () {
         Navigator.push(
           context,
@@ -54,10 +53,11 @@ class ProductoCard extends StatelessWidget {
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                // Barra lateral indicadora de stock crítico
                 Container(
                   width: 4,
-                  color: producto.stock <= 10 ? Colors.redAccent : AppTheme.primary,
+                  color: producto.stock <= 10
+                      ? Colors.redAccent
+                      : AppTheme.primary,
                 ),
                 Expanded(
                   child: Padding(
@@ -66,7 +66,7 @@ class ProductoCard extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          producto.categoria.toUpperCase(),
+                          producto.categoryName.toUpperCase(),
                           style: const TextStyle(
                             fontSize: 10,
                             fontWeight: FontWeight.w700,
@@ -76,7 +76,7 @@ class ProductoCard extends StatelessWidget {
                         ),
                         const SizedBox(height: 3),
                         Text(
-                          producto.nombre,
+                          producto.name,
                           style: const TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.w700,
@@ -89,7 +89,10 @@ class ProductoCard extends StatelessWidget {
                           children: [
                             const Text(
                               'Stock: ',
-                              style: TextStyle(fontSize: 12, color: AppTheme.textMuted),
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: AppTheme.textMuted,
+                              ),
                             ),
                             Text(
                               '${producto.stock} uds',
@@ -105,7 +108,7 @@ class ProductoCard extends StatelessWidget {
                         Align(
                           alignment: Alignment.centerRight,
                           child: Text(
-                            _formatearPrecio(producto.precio),
+                            _formatearPrecio(producto.price),
                             style: const TextStyle(
                               fontSize: 22,
                               fontWeight: FontWeight.w800,

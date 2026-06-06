@@ -1,24 +1,34 @@
 import 'package:flutter/material.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../domain/entities/document_type.dart';
 
 class ProfileDropdownField extends StatelessWidget {
   final String label;
   final IconData icon;
-  final String value;
-  final List<String> items;
-  final ValueChanged<String?> onChanged;
+  final String selectedAbbreviation;
+  final List<DocumentTypeEntity> items;
+  final ValueChanged<DocumentTypeEntity?> onChanged;
 
   const ProfileDropdownField({
     super.key,
     required this.label,
     required this.icon,
-    required this.value,
+    required this.selectedAbbreviation,
     required this.items,
     required this.onChanged,
   });
 
   @override
   Widget build(BuildContext context) {
+    DocumentTypeEntity? currentValue;
+    try {
+      currentValue = items.firstWhere(
+        (e) => e.abbreviation == selectedAbbreviation,
+      );
+    } catch (_) {
+      currentValue = items.isNotEmpty ? items.first : null;
+    }
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -44,17 +54,24 @@ class ProfileDropdownField extends StatelessWidget {
             borderRadius: BorderRadius.circular(12),
           ),
           child: DropdownButtonHideUnderline(
-            child: DropdownButton<String>(
-              value: value,
+            child: DropdownButton<DocumentTypeEntity>(
+              value: currentValue,
               isExpanded: true,
               icon: const Icon(
                 Icons.keyboard_arrow_down_rounded,
                 color: AppTheme.textMuted,
               ),
-              style: const TextStyle(fontSize: 15, color: AppTheme.textDark),
-              items: items
-                  .map((e) => DropdownMenuItem(value: e, child: Text(e)))
-                  .toList(),
+              style: const TextStyle(
+                fontSize: 15,
+                color: AppTheme.textDark,
+                fontWeight: FontWeight.w500,
+              ),
+              items: items.map((DocumentTypeEntity type) {
+                return DropdownMenuItem<DocumentTypeEntity>(
+                  value: type,
+                  child: Text('${type.abbreviation} - ${type.name}'),
+                );
+              }).toList(),
               onChanged: onChanged,
             ),
           ),

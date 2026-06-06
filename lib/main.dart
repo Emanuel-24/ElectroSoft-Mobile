@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'core/theme/app_theme.dart';
 import 'features/auth/presentation/screens/login_screen.dart';
-import 'shared/widgets/main_shell.dart'; // <--- Lo moveremos aquí
 
 void main() => runApp(const ElectroSoftApp());
 
@@ -21,7 +20,6 @@ class ElectroSoftApp extends StatelessWidget {
       ),
       routes: {
         '/': (context) => const LoginScreen(),
-        '/home': (context) => const MainShell(),
       },
     );
   }

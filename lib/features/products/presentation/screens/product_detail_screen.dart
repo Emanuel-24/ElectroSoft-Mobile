@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import '../../domain/entities/product.dart'; // ← Apuntando a tu nueva entidad 'Product'
+import '../../domain/entities/product.dart';
 import '../../../../core/theme/app_theme.dart';
 import 'package:intl/intl.dart';
 
 class ProductDetailScreen extends StatelessWidget {
-  final Product producto; // ← Cambiado de 'Producto' a 'Product'
+  final Product producto;
 
   const ProductDetailScreen({super.key, required this.producto});
 
@@ -38,7 +38,6 @@ class ProductDetailScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Cabecera con fondo del mismo color que AppBar
             Container(
               width: double.infinity,
               color: AppTheme.primary,
@@ -46,7 +45,7 @@ class ProductDetailScreen extends StatelessWidget {
               child: Column(
                 children: [
                   Text(
-                    producto.name, // ← Cambiado de .nombre a .name
+                    producto.name,
                     textAlign: TextAlign.center,
                     style: const TextStyle(
                       fontSize: 24,
@@ -56,14 +55,17 @@ class ProductDetailScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 12),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 6,
+                    ),
                     decoration: BoxDecoration(
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(20),
                     ),
                     child: Text(
-                      producto.categoryName.toUpperCase(), // ← Cambiado de .categoria a .categoryName
-                      style: const TextStyle( // ← Removido const de arriba para evitar conflicto si se requiere dinámico
+                      producto.categoryName.toUpperCase(),
+                      style: const TextStyle(
                         fontSize: 13,
                         fontWeight: FontWeight.bold,
                         color: AppTheme.primary,
@@ -73,10 +75,9 @@ class ProductDetailScreen extends StatelessWidget {
                 ],
               ),
             ),
-            
+
             const SizedBox(height: 16),
-            
-            // Información General
+
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Card(
@@ -100,41 +101,44 @@ class ProductDetailScreen extends StatelessWidget {
                         ),
                       ),
                       const Divider(height: 24, thickness: 1),
-                      
+
                       _buildInfoRow(
                         label: 'Precio',
-                        value: _formatearPrecio(producto.price), // ← Mantiene .price
+                        value: _formatearPrecio(producto.price),
                       ),
                       const Divider(height: 1, thickness: 1),
                       _buildInfoRow(
                         label: 'Stock',
-                        value: '${producto.stock} unidades', // ← Mantiene .stock
+                        value: '${producto.stock} unidades',
                         valueColor: _obtenerColorStock(producto.stock),
                       ),
                       const Divider(height: 1, thickness: 1),
                       _buildInfoRow(
                         label: 'Serial',
-                        value: producto.serial.isEmpty ? 'No registrado' : producto.serial, // ← Mantiene .serial
+                        value: producto.serial.isEmpty
+                            ? 'No registrado'
+                            : producto.serial,
                       ),
                       const Divider(height: 1, thickness: 1),
                       _buildInfoRow(
                         label: 'Garantía',
-                        value: producto.warranty.isEmpty ? 'No especificada' : producto.warranty, // ← Cambiado de .garantia a .warranty
+                        value: producto.warranty.isEmpty
+                            ? 'No especificada'
+                            : producto.warranty,
                       ),
                       const Divider(height: 1, thickness: 1),
                       _buildInfoRow(
                         label: 'Categoría',
-                        value: producto.categoryName, // ← Cambiado de .categoria a .categoryName
+                        value: producto.categoryName,
                       ),
                     ],
                   ),
                 ),
               ),
             ),
-            
+
             const SizedBox(height: 16),
-            
-            // Características Técnicas
+
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Card(
@@ -158,8 +162,8 @@ class ProductDetailScreen extends StatelessWidget {
                         ),
                       ),
                       const Divider(height: 24, thickness: 1),
-                      
-                      producto.characteristics.isEmpty // ← Cambiado de .caracteristicas a .characteristics
+
+                      producto.characteristics.isEmpty
                           ? const Center(
                               child: Padding(
                                 padding: EdgeInsets.all(32),
@@ -175,12 +179,12 @@ class ProductDetailScreen extends StatelessWidget {
                 ),
               ),
             ),
-            
+
             const SizedBox(height: 80),
           ],
         ),
       ),
-      
+
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => Navigator.pop(context),
         icon: const Icon(Icons.arrow_back, size: 20),
@@ -188,15 +192,12 @@ class ProductDetailScreen extends StatelessWidget {
         backgroundColor: Colors.white,
         foregroundColor: AppTheme.primary,
         elevation: 4,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(30),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
     );
   }
 
-  // Widget para fila de información
   Widget _buildInfoRow({
     required String label,
     required String value,
@@ -237,17 +238,13 @@ class ProductDetailScreen extends StatelessWidget {
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
       child: Table(
-        border: TableBorder.all(
-          color: Colors.grey[300]!,
-          width: 1,
-        ),
+        border: TableBorder.all(color: Colors.grey[300]!, width: 1),
         columnWidths: const {
           0: FixedColumnWidth(140),
           1: FixedColumnWidth(100),
           2: FixedColumnWidth(160),
         },
         children: [
-          // Encabezado
           TableRow(
             decoration: BoxDecoration(
               color: AppTheme.primary.withValues(alpha: 0.08),
@@ -258,14 +255,15 @@ class ProductDetailScreen extends StatelessWidget {
               _buildTableCell('Valor', isHeader: true),
             ],
           ),
-          // Filas de características (Adaptado al objeto Feature)
-          ...producto.characteristics.map((caract) => TableRow(
-                children: [
-                  _buildTableCell(caract.name), // ← Cambiado de .caracteristica a .name
-                  _buildTableCell(caract.unit.isEmpty ? '-' : caract.unit), // ← Cambiado de .medida a .unit
-                  _buildTableCell(caract.value), // ← Cambiado de .valor a .value
-                ],
-              )),
+          ...producto.characteristics.map(
+            (caract) => TableRow(
+              children: [
+                _buildTableCell(caract.name),
+                _buildTableCell(caract.unit.isEmpty ? '-' : caract.unit),
+                _buildTableCell(caract.value),
+              ],
+            ),
+          ),
         ],
       ),
     );

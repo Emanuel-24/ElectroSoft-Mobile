@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import '../../data/services/auth_service.dart';
+import '../../../../shared/widgets/main_shell.dart'; 
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -8,27 +10,70 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  // Controladores para capturar lo que el usuario escribe
-  final TextEditingController _emailController = TextEditingController();
-  final TextEditingController _passwordController = TextEditingController();
+  final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
   bool _isPasswordVisible = false;
 
-  void _handleLogin() {
-    final email = _emailController.text;
-    final password = _passwordController.text;
+  final AuthService _authService = AuthService();
+  bool _isLoading = false;
 
-    // Lógica del dato quemado
-    if (email == 'admin@gmail.com' && password == '123456') {
-      Navigator.pushReplacementNamed(context, '/home');
-    } else {
-      // Si fallan los datos, mostramos un mensaje
+  Future<void> _handleLogin() async {
+    final email = _emailController.text.trim();
+    final password = _passwordController.text.trim();
+
+    if (email.isEmpty || password.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Credenciales incorrectas. Intenta de nuevo.'),
+          content: Text('Por favor, rellene todos los campos.'),
+          backgroundColor: Colors.amber,
+        ),
+      );
+      return;
+    }
+
+    setState(() => _isLoading = true);
+
+    try {
+      final authResponse = await _authService.login(email, password);
+
+      if (authResponse != null && authResponse.success) {
+        if (!mounted) return;
+
+        final usuarioLogueado = authResponse.data.user;
+
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (_) => MainShell(
+              initialIndex: 0,
+              usuario: usuarioLogueado,
+            ),
+          ),
+        );
+      }
+    } catch (e) {
+      if (!mounted) return;
+
+      final errorMessage = e.toString().replaceAll('Exception: ', '');
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(errorMessage),
           backgroundColor: Colors.redAccent,
         ),
       );
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
     }
+  }
+
+  @override
+  void dispose() {
+    _emailController.dispose();
+    _passwordController.dispose();
+    super.dispose();
   }
 
   @override
@@ -36,105 +81,136 @@ class _LoginScreenState extends State<LoginScreen> {
     return Scaffold(
       body: Container(
         width: double.infinity,
+        height: double.infinity,
         decoration: const BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
-            colors: [
-              Colors.white,
-              Color(0xFFFFD54F),
-            ],
+            colors: [Colors.white, Color(0xFFFFD54F)],
           ),
         ),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 120),
-          child: Column(
-            children: [
-              const Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    'Electro',
-                    style: TextStyle(
-                      fontSize: 40,
-                      fontWeight: FontWeight.bold,
-                      color: Color(0xFF2D3142),
+        child: SafeArea(
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              return SingleChildScrollView(
+                physics: const ClampingScrollPhysics(),
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(minHeight: constraints.maxHeight),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 40,
+                      vertical: 30,
                     ),
-                  ),
-                  Text(
-                    'Soft',
-                    style: TextStyle(
-                      fontSize: 40,
-                      fontWeight: FontWeight.bold,
-                      color: Color(0xFFFFD54F),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        // LOGO ELECTROSOFT
+                        const Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              'Electro',
+                              style: TextStyle(
+                                fontSize: 40,
+                                fontWeight: FontWeight.bold,
+                                color: Color(0xFF2D3142),
+                              ),
+                            ),
+                            Text(
+                              'Soft',
+                              style: TextStyle(
+                                fontSize: 40,
+                                fontWeight: FontWeight.bold,
+                                color: Color(0xFFFFD54F),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 30),
+
+                        const Icon(
+                          Icons.account_circle_outlined,
+                          size: 100,
+                          color: Color(0xFFFFD54F),
+                        ),
+                        const SizedBox(height: 30),
+
+                        const Text(
+                          'Login',
+                          style: TextStyle(
+                            fontSize: 30,
+                            fontWeight: FontWeight.w400,
+                          ),
+                        ),
+                        const SizedBox(height: 40),
+
+                        // CAMPO EMAIL
+                        _buildTextField(
+                          controller: _emailController,
+                          hint: 'Ingrese su email',
+                          icon: Icons.email_outlined,
+                        ),
+                        const SizedBox(height: 20),
+
+                        // CAMPO DE CONTRASEÑA
+                        _buildTextField(
+                          controller: _passwordController,
+                          hint: 'Ingrese su contraseña',
+                          icon: Icons.lock_outline,
+                          isPassword: true,
+                          obscureText: !_isPasswordVisible,
+                          onSuffixIconPressed: () {
+                            setState(
+                              () => _isPasswordVisible = !_isPasswordVisible,
+                            );
+                          },
+                        ),
+                        const SizedBox(height: 40),
+
+                        // BOTON ACCEDER
+                        SizedBox(
+                          width: 250,
+                          height: 50,
+                          child: ElevatedButton(
+                            onPressed: _isLoading ? null : _handleLogin,
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xFFFFD54F),
+                              foregroundColor: Colors.white,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              elevation: 5,
+                            ),
+                            child: _isLoading
+                                ? const SizedBox(
+                                    width: 24,
+                                    height: 24,
+                                    child: CircularProgressIndicator(
+                                      color: Colors.white,
+                                      strokeWidth: 2.5,
+                                    ),
+                                  )
+                                : const Text(
+                                    'Acceder',
+                                    style: TextStyle(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                          ),
+                        ),
+                      ],
                     ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 40),
-
-              const Icon(
-                Icons.account_circle_outlined,
-                size: 100,
-                color: Color(0xFFFFD54F),
-              ),
-              const SizedBox(height: 40),
-
-              const Text(
-                'Login',
-                style: TextStyle(fontSize: 30, fontWeight: FontWeight.w400),
-              ),
-              const SizedBox(height: 70),
-
-              // Campo de Email
-              _buildTextField(
-                controller: _emailController,
-                hint: 'Ingrese su email',
-                icon: Icons.email_outlined,
-              ),
-              const SizedBox(height: 30),
-
-              // Campo de Contraseña
-              _buildTextField(
-                controller: _passwordController,
-                hint: 'Ingrese su contraseña',
-                icon: Icons.lock_outline,
-                isPassword: true,
-                obscureText: !_isPasswordVisible,
-                onSuffixIconPressed: () {
-                  setState(() => _isPasswordVisible = !_isPasswordVisible);
-                },
-              ),
-              const SizedBox(height: 60),
-
-              // Botón Acceder
-              SizedBox(
-                width: 250,
-                height: 50,
-                child: ElevatedButton(
-                  onPressed: _handleLogin,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFFFFD54F),
-                    foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    elevation: 5,
-                  ),
-                  child: const Text(
-                    'Acceder',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                   ),
                 ),
-              ),
-            ],
+              );
+            },
           ),
         ),
       ),
     );
   }
 
-  // Widget reutilizable para los inputs
   Widget _buildTextField({
     required TextEditingController controller,
     required String hint,

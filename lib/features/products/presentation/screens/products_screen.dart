@@ -1,15 +1,21 @@
 import 'package:flutter/material.dart';
 import '../../../../core/theme/app_theme.dart';
-import '../../../../shared/widgets/widgets.dart'; // Tu BottomNav y otros compartidos
-import '../../domain/entities/product.dart'; // Clase Product (Nueva)
-import '../widgets/product_card.dart'; // Clase ProductoCard y EstadoVacio
+import '../../../../shared/widgets/widgets.dart';
+import '../../domain/entities/product.dart';
+import '../widgets/product_card.dart';
 import '../../../../shared/widgets/main_shell.dart';
 import '../../data/services/product_service.dart';
+import '../../../auth/domain/entities/auth_response.dart';
 
 class ProductosScreen extends StatefulWidget {
   final String categoria;
+  final UserSession usuario;
 
-  const ProductosScreen({super.key, required this.categoria});
+  const ProductosScreen({
+    super.key,
+    required this.categoria,
+    required this.usuario,
+  });
 
   @override
   State<ProductosScreen> createState() => _ProductosScreenState();
@@ -20,7 +26,6 @@ class _ProductosScreenState extends State<ProductosScreen> {
   final TextEditingController _ctrl = TextEditingController();
   final ProductService _service = ProductService();
 
-  // Estados para controlar la carga del Backend
   List<Product> _todosLosProductos = [];
   bool _isLoading = true;
   String? _errorMessage;
@@ -31,7 +36,6 @@ class _ProductosScreenState extends State<ProductosScreen> {
     _cargarProductosDelBackend();
   }
 
-  // Carga los productos asíncronamente desde el servicio una sola vez
   Future<void> _cargarProductosDelBackend() async {
     try {
       setState(() {
@@ -41,8 +45,6 @@ class _ProductosScreenState extends State<ProductosScreen> {
 
       final productosApi = await _service.obtenerProductos();
 
-      // Filtramos en memoria para quedarnos solo con los de la categoría seleccionada
-      // Nota: Tu backend devuelve categoryName. Comparamos ignorando mayúsculas/minúsculas.
       _todosLosProductos = productosApi
           .where(
             (p) =>
@@ -57,7 +59,6 @@ class _ProductosScreenState extends State<ProductosScreen> {
     }
   }
 
-  // Aplicamos tu filtro de búsqueda local en tiempo real por el campo `.name`
   List<Product> get _filtrados {
     if (_query.trim().isEmpty) return _todosLosProductos;
     final q = _query.toLowerCase();
@@ -98,7 +99,12 @@ class _ProductosScreenState extends State<ProductosScreen> {
         onTabChanged: (index) {
           Navigator.pushReplacement(
             context,
-            MaterialPageRoute(builder: (_) => MainShell(initialIndex: index)),
+            MaterialPageRoute(
+              builder: (_) => MainShell(
+                initialIndex: index,
+                usuario: widget.usuario,
+              ),
+            ),
           );
         },
       ),
@@ -106,10 +112,8 @@ class _ProductosScreenState extends State<ProductosScreen> {
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // 1. Manejo del Estado de Carga (Loading)
           if (_isLoading)
             const Expanded(child: Center(child: CircularProgressIndicator()))
-          // 2. Manejo del Estado de Error
           else if (_errorMessage != null)
             Expanded(
               child: Center(
@@ -135,9 +139,7 @@ class _ProductosScreenState extends State<ProductosScreen> {
                 ),
               ),
             )
-          // 3. Mostrar la interfaz si la data cargó correctamente
           else ...[
-            // Contador de resultados
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
               child: Text(
@@ -151,7 +153,6 @@ class _ProductosScreenState extends State<ProductosScreen> {
               ),
             ),
 
-            // Lista de productos o Estado Vacío
             Expanded(
               child: productos.isEmpty
                   ? EstadoVacio(query: _query)
@@ -172,7 +173,6 @@ class _ProductosScreenState extends State<ProductosScreen> {
   }
 }
 
-// --- Widget Privado para el AppBar de esta pantalla (Se mantiene igual) ---
 class _ProductosAppBar extends StatelessWidget {
   final String titulo;
   final TextEditingController controller;

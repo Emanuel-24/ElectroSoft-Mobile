@@ -2,8 +2,15 @@ import 'package:flutter/material.dart';
 import '../../../../core/theme/app_theme.dart';
 
 class BigAvatar extends StatelessWidget {
-  final String nombre;
-  const BigAvatar({super.key, required this.nombre});
+  final String fullName;
+  const BigAvatar({super.key, required this.fullName});
+
+  String get _iniciales {
+    final p = fullName.trim().split(' ');
+    return p.length >= 2
+        ? '${p[0][0]}${p[1][0]}'.toUpperCase()
+        : p[0][0].toUpperCase();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -15,11 +22,11 @@ class BigAvatar extends StatelessWidget {
       ),
       child: CircleAvatar(
         radius: 50,
-        backgroundColor: const Color(0xFFE0E0E0),
+        backgroundColor: AppTheme.avatarBg2,
         child: Text(
-          nombre.substring(0, 1).toUpperCase(),
+          _iniciales,
           style: const TextStyle(
-            fontSize: 40,
+            fontSize: 32,
             fontWeight: FontWeight.w900,
             color: Colors.white,
           ),
@@ -30,8 +37,8 @@ class BigAvatar extends StatelessWidget {
 }
 
 class RoleChip extends StatelessWidget {
-  final String rol;
-  const RoleChip({super.key, required this.rol});
+  final String roleName;
+  const RoleChip({super.key, required this.roleName});
 
   @override
   Widget build(BuildContext context) {
@@ -42,7 +49,7 @@ class RoleChip extends StatelessWidget {
         borderRadius: BorderRadius.circular(20),
       ),
       child: Text(
-        rol.toUpperCase(),
+        roleName.toUpperCase(),
         style: const TextStyle(
           color: AppTheme.primary,
           fontWeight: FontWeight.bold,
@@ -98,21 +105,23 @@ class InfoItem extends StatelessWidget {
         children: [
           Icon(icon, color: iconColor ?? Colors.grey, size: 20),
           const SizedBox(width: 12),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                label,
-                style: const TextStyle(fontSize: 11, color: Colors.grey),
-              ),
-              Text(
-                value,
-                style: const TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  label,
+                  style: const TextStyle(fontSize: 11, color: Colors.grey),
                 ),
-              ),
-            ],
+                Text(
+                  value,
+                  style: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            ),
           ),
         ],
       ),

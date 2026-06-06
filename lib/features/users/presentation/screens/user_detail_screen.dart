@@ -3,20 +3,24 @@ import '../../../../shared/widgets/widgets.dart';
 import '../../domain/entities/user.dart';
 import '../widgets/user_detail_widgets.dart';
 import '../../../../shared/widgets/main_shell.dart';
+import '../../../../core/theme/app_theme.dart';
+import '../../../auth/domain/entities/auth_response.dart';
 
 class UsuarioDetalleScreen extends StatelessWidget {
   final Usuario usuario;
-  final String email = "usuario@electrosoft.com";
-  final String telefono = "+57 300 123 4567";
-  const UsuarioDetalleScreen({super.key, required this.usuario});
+  final UserSession usuarioLogueado;
+
+  const UsuarioDetalleScreen({
+    super.key,
+    required this.usuario,
+    required this.usuarioLogueado,
+  });
 
   @override
   Widget build(BuildContext context) {
-    final bool esActivo = usuario.estado == EstadoUsuario.activo;
-
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F7F9), // Tu gris de fondo
-      appBar: ElectroAppBar(
+      backgroundColor: const Color(0xFFF5F7F9),
+      appBar: const ElectroAppBar(
         title: 'Detalle de Usuario',
         showSearch: false,
         showBack: true,
@@ -24,7 +28,6 @@ class UsuarioDetalleScreen extends StatelessWidget {
       body: SingleChildScrollView(
         child: Column(
           children: [
-            // --- HEADER CON AVATAR ---
             Container(
               width: double.infinity,
               padding: const EdgeInsets.symmetric(vertical: 30),
@@ -37,10 +40,10 @@ class UsuarioDetalleScreen extends StatelessWidget {
               ),
               child: Column(
                 children: [
-                  BigAvatar(nombre: usuario.nombre),
+                  BigAvatar(fullName: usuario.fullName),
                   const SizedBox(height: 16),
                   Text(
-                    usuario.nombre,
+                    usuario.fullName,
                     style: const TextStyle(
                       fontSize: 24,
                       fontWeight: FontWeight.bold,
@@ -48,7 +51,7 @@ class UsuarioDetalleScreen extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 4),
-                  RoleChip(rol: usuario.rol),
+                  RoleChip(roleName: usuario.roleName),
                 ],
               ),
             ),
@@ -64,34 +67,43 @@ class UsuarioDetalleScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 12),
 
-                  // --- TARJETA DE DATOS ---
                   InfoCard(
                     items: [
                       InfoItem(
                         icon: Icons.badge_outlined,
                         label: 'Rol del sistema',
-                        value: usuario.rol,
+                        value: usuario.roleName,
+                      ),
+                      InfoItem(
+                        icon: Icons.credit_card_rounded,
+                        label: 'Identificación',
+                        value:
+                            '${usuario.documentAbbreviation} - ${usuario.documentNumber}',
                       ),
                       InfoItem(
                         icon: Icons.email_outlined,
                         label: 'Correo electrónico',
-                        value: email,
+                        value: usuario.email,
                       ),
                       InfoItem(
                         icon: Icons.phone_android_outlined,
                         label: 'Número de teléfono',
-                        value: telefono,
+                        value: usuario.phone.isEmpty
+                            ? 'No registrado'
+                            : usuario.phone,
                       ),
                       InfoItem(
                         icon: Icons.history_rounded,
                         label: 'Último acceso registrado',
-                        value: usuario.ultimoAcceso,
+                        value: usuario.lastAccess,
                       ),
                       InfoItem(
                         icon: Icons.circle,
-                        iconColor: esActivo ? Colors.green : Colors.grey,
+                        iconColor: usuario.isActive
+                            ? AppTheme.verde
+                            : AppTheme.gris,
                         label: 'Estado de la cuenta',
-                        value: esActivo ? 'Activo' : 'Inactivo',
+                        value: usuario.isActive ? 'Activo' : 'Inactivo',
                       ),
                     ],
                   ),
@@ -107,7 +119,10 @@ class UsuarioDetalleScreen extends StatelessWidget {
         onTabChanged: (index) {
           Navigator.pushReplacement(
             context,
-            MaterialPageRoute(builder: (_) => MainShell(initialIndex: index)),
+            MaterialPageRoute(
+              builder: (_) =>
+                  MainShell(initialIndex: index, usuario: usuarioLogueado),
+            ),
           );
         },
       ),

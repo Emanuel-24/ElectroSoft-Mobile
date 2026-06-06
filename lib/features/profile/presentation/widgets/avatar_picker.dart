@@ -1,24 +1,25 @@
-import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import '../../../../core/theme/app_theme.dart';
 
 class AvatarPicker extends StatelessWidget {
   final String? avatarUrl;
-  final File? pickedFile;
+  final Uint8List? pickedBytes;
   final VoidCallback onTap;
 
   const AvatarPicker({
     super.key,
     this.avatarUrl,
-    this.pickedFile,
+    this.pickedBytes,
     required this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
     ImageProvider? image;
-    if (pickedFile != null) {
-      image = FileImage(pickedFile!);
+
+    if (pickedBytes != null) {
+      image = MemoryImage(pickedBytes!);
     } else if (avatarUrl != null && avatarUrl!.isNotEmpty) {
       image = NetworkImage(avatarUrl!);
     }

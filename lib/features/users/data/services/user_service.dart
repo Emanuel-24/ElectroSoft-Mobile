@@ -1,14 +1,14 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import '../models/categoria_model.dart';
+import '../../domain/entities/user.dart';
 
-class CategoriaService {
-  static const String baseUrl = 'http://localhost:4000/api/productCategory';
+class UserService {
+  static const String baseUrl = 'http://localhost:4000/api/users';
   final _storage = const FlutterSecureStorage();
 
-  Future<List<CategoriaModel>> obtenerCategorias() async {
-    final token = await _storage.read(key: 'auth_token');
+  Future<List<Usuario>> obtenerUsuarios() async {
+    final token = await _storage.read(key: 'jwt_token');
 
     final response = await http.get(
       Uri.parse(baseUrl),
@@ -20,14 +20,15 @@ class CategoriaService {
 
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
-      final List categorias = data['data'];
-      return categorias.map((e) => CategoriaModel.fromJson(e)).toList();
+
+      final List usuariosJson = data['data'];
+      return usuariosJson.map((e) => Usuario.fromJson(e)).toList();
     }
 
     if (response.statusCode == 401 || response.statusCode == 403) {
-      throw Exception('Sesión expirada o no autorizada');
+      throw Exception('Sesión expirada o no tienes permisos para ver usuarios');
     }
 
-    throw Exception('Error al cargar categorías');
+    throw Exception('Error al cargar la lista de usuarios');
   }
 }

@@ -1,10 +1,10 @@
-import 'package:electrosoft/core/theme/app_theme.dart';
 import 'package:flutter/material.dart';
-import '../../domain/entities/shopping.dart';
 import 'package:intl/intl.dart';
+import '../../../../core/theme/app_theme.dart';
+import '../../domain/entities/shopping.dart';
 
 class DetalleCompraScreen extends StatelessWidget {
-  final Compra compra;
+  final Shopping compra;
 
   const DetalleCompraScreen({super.key, required this.compra});
 
@@ -17,16 +17,34 @@ class DetalleCompraScreen extends StatelessWidget {
     return formatCurrency.format(precio);
   }
 
-  String _formatearFecha(DateTime fecha) {
-    return DateFormat('dd/MM/yyyy').format(fecha);
+  String _obtenerFecha() {
+    if (compra.purchaseDate != null && compra.purchaseDate!.isNotEmpty) {
+      return compra.purchaseDate!;
+    }
+    return DateFormat('dd/MM/yyyy').format(compra.createdAt);
+  }
+
+  Color _obtenerColorEstado(String estado) {
+    switch (estado.toUpperCase()) {
+      case 'ACTIVA':
+        return AppTheme.verde;
+      case 'ANULADA':
+        return Colors.redAccent;
+      default:
+        return Colors.grey;
+    }
   }
 
   @override
   Widget build(BuildContext context) {
+    final Color estadoColor = _obtenerColorEstado(compra.estado);
+
     return Scaffold(
       backgroundColor: const Color(0xFFF5F5F5),
       appBar: AppBar(
-        title: Text('Compra #${compra.id}'),
+        title: Text(
+          'Detalle de Compra',
+        ),
         backgroundColor: AppTheme.primary,
         foregroundColor: Colors.white,
         elevation: 0,
@@ -36,14 +54,16 @@ class DetalleCompraScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Cabecera con el mismo color de la cabecera (AppTheme.primary)
             Container(
               width: double.infinity,
-              color: AppTheme.primary, // ← MISMO COLOR VERDE DE LA CABECERA
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
+              color: AppTheme.primary,
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
               child: Center(
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 20,
+                    vertical: 10,
+                  ),
                   decoration: BoxDecoration(
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(25),
@@ -55,17 +75,17 @@ class DetalleCompraScreen extends StatelessWidget {
                         width: 10,
                         height: 10,
                         decoration: BoxDecoration(
-                          color: compra.estado.color,
+                          color: estadoColor,
                           shape: BoxShape.circle,
                         ),
                       ),
                       const SizedBox(width: 8),
                       Text(
-                        compra.estado.displayName.toUpperCase(),
+                        compra.estado.toUpperCase(),
                         style: TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.bold,
-                          color: compra.estado.color,
+                          color: estadoColor,
                         ),
                       ),
                     ],
@@ -73,10 +93,64 @@ class DetalleCompraScreen extends StatelessWidget {
                 ),
               ),
             ),
-            
+
             const SizedBox(height: 16),
-            
-            // Información General
+
+            if (compra.isAnulada && compra.infoAnulacion != null)
+              Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 8,
+                ),
+                child: Card(
+                  elevation: 2,
+                  color: Colors.red.shade50,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    side: BorderSide(color: Colors.red.shade200, width: 1),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Row(
+                          children: [
+                            Icon(
+                              Icons.report_problem,
+                              color: Colors.redAccent,
+                              size: 20,
+                            ),
+                            SizedBox(width: 8),
+                            Text(
+                              'DETALLES DE ANULACIÓN',
+                              style: TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.redAccent,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const Divider(
+                          height: 20,
+                          thickness: 1,
+                          color: Colors.redAccent,
+                        ),
+                        Text(
+                          'Motivo: ${compra.infoAnulacion?.motivo ?? "No especificado"}',
+                          style: TextStyle(
+                            color: Colors.red.shade900,
+                            fontSize: 14,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Card(
@@ -100,21 +174,16 @@ class DetalleCompraScreen extends StatelessWidget {
                         ),
                       ),
                       const Divider(height: 24, thickness: 1),
-                      
-                      _buildInfoRow(
-                        label: 'Número',
-                        value: compra.id,
-                      ),
+
+                      _buildInfoRow(label: 'ID Factura', value: compra.invoiceNumber),
                       const Divider(height: 1, thickness: 1),
                       _buildInfoRow(
                         label: 'Proveedor',
-                        value: compra.proveedor,
+                        value:
+                            compra.providerName ?? 'ID: ${compra.providerId}',
                       ),
                       const Divider(height: 1, thickness: 1),
-                      _buildInfoRow(
-                        label: 'Fecha',
-                        value: _formatearFecha(compra.fecha),
-                      ),
+                      _buildInfoRow(label: 'Fecha', value: _obtenerFecha()),
                       const Divider(height: 1, thickness: 1),
                       _buildInfoRow(
                         label: 'Total',
@@ -126,10 +195,9 @@ class DetalleCompraScreen extends StatelessWidget {
                 ),
               ),
             ),
-            
+
             const SizedBox(height: 16),
-            
-            // Productos
+
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Card(
@@ -144,7 +212,7 @@ class DetalleCompraScreen extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       const Text(
-                        'PRODUCTOS',
+                        'PRODUCTOS COMPRADOS',
                         style: TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.bold,
@@ -153,16 +221,21 @@ class DetalleCompraScreen extends StatelessWidget {
                         ),
                       ),
                       const Divider(height: 24, thickness: 1),
-                      
-                      // Lista de productos
+
                       ListView.separated(
                         shrinkWrap: true,
                         physics: const NeverScrollableScrollPhysics(),
-                        itemCount: compra.items.length,
-                        separatorBuilder: (context, index) => 
-                          const Divider(height: 1, thickness: 1),
+                        itemCount: compra
+                            .products
+                            .length,
+                        separatorBuilder: (context, index) =>
+                            const Divider(height: 1, thickness: 1),
                         itemBuilder: (context, index) {
-                          final item = compra.items[index];
+                          final item = compra.products[index];
+                          final double subtotal =
+                              item.quantity *
+                              item.purchasePrice;
+
                           return Padding(
                             padding: const EdgeInsets.symmetric(vertical: 12),
                             child: Row(
@@ -170,10 +243,12 @@ class DetalleCompraScreen extends StatelessWidget {
                                 Expanded(
                                   flex: 3,
                                   child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
                                       Text(
-                                        item.productoNombre,
+                                        item.productName ??
+                                            'Producto ID: ${item.productId.substring(0, 8)}',
                                         style: const TextStyle(
                                           fontSize: 14,
                                           fontWeight: FontWeight.w600,
@@ -182,7 +257,7 @@ class DetalleCompraScreen extends StatelessWidget {
                                       ),
                                       const SizedBox(height: 4),
                                       Text(
-                                        '${item.cantidad} x ${_formatearPrecio(item.precioUnitario)}',
+                                        '${item.quantity} unds x ${_formatearPrecio(item.purchasePrice)}',
                                         style: const TextStyle(
                                           fontSize: 12,
                                           color: AppTheme.textMuted,
@@ -192,9 +267,9 @@ class DetalleCompraScreen extends StatelessWidget {
                                   ),
                                 ),
                                 Expanded(
-                                  flex: 1,
+                                  flex: 2,
                                   child: Text(
-                                    _formatearPrecio(item.subtotal),
+                                    _formatearPrecio(subtotal),
                                     textAlign: TextAlign.right,
                                     style: const TextStyle(
                                       fontSize: 14,
@@ -208,17 +283,16 @@ class DetalleCompraScreen extends StatelessWidget {
                           );
                         },
                       ),
-                      
+
                       const Divider(height: 24, thickness: 1),
-                      
-                      // Total
+
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           const Text(
-                            'TOTAL',
+                            'TOTAL FACTURADO',
                             style: TextStyle(
-                              fontSize: 16,
+                              fontSize: 14,
                               fontWeight: FontWeight.bold,
                               color: AppTheme.textDark,
                             ),
@@ -238,12 +312,10 @@ class DetalleCompraScreen extends StatelessWidget {
                 ),
               ),
             ),
-            
-            const SizedBox(height: 80),
+            const SizedBox(height: 90),
           ],
         ),
       ),
-      
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => Navigator.pop(context),
         icon: const Icon(Icons.arrow_back, size: 20),
@@ -251,9 +323,7 @@ class DetalleCompraScreen extends StatelessWidget {
         backgroundColor: Colors.white,
         foregroundColor: AppTheme.primary,
         elevation: 4,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(30),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
     );
@@ -268,9 +338,10 @@ class DetalleCompraScreen extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: 12),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           SizedBox(
-            width: 100,
+            width: 110,
             child: Text(
               label,
               style: const TextStyle(
@@ -283,6 +354,7 @@ class DetalleCompraScreen extends StatelessWidget {
           Expanded(
             child: Text(
               value,
+              textAlign: TextAlign.right,
               style: TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.w500,

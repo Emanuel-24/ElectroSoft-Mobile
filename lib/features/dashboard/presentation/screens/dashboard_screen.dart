@@ -1,10 +1,13 @@
 // PANTALLA PRINCIPAL DEL DASHBOARD
-
+import 'package:electrosoft/features/dashboard/presentation/widgets/sales_chart.dart';
 import 'package:flutter/material.dart';
 import '../widgets/stats_card.dart';
 import '../widgets/activity_item.dart';
 import '../screens/notifications_screen.dart';
-import '../../../products/data/services/product_service.dart'; // ← Importamos tu servicio real
+import '../../../products/data/services/product_service.dart';
+import '../../data/services/order_service.dart';
+import '../../data/services/sale_service.dart';
+import 'package:intl/intl.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -15,22 +18,33 @@ class DashboardScreen extends StatefulWidget {
 
 class _DashboardScreenState extends State<DashboardScreen> {
   final ProductService _productService = ProductService();
+  final OrderService _orderService = OrderService();
+  final SaleService _saleService = SaleService();
+
+  Map<int, double> _ventasPorMes = {};
+
   int _numCriticos = 0;
+  int _pedidosPendientes = 0;
+  int _pedidosUrgentes = 0;
+  double _ventasTotales = 0;
+
+  bool _loadingVentas = true;
   bool _isLoadingStock = true;
 
   @override
   void initState() {
     super.initState();
+
     _calcularStockCritico();
+    _cargarPedidosPendientes();
+    _cargarVentas();
   }
 
-  // Lógica asíncrona para obtener el stock crítico real del backend
   Future<void> _calcularStockCritico() async {
     try {
       final productos = await _productService.obtenerProductos();
       if (mounted) {
         setState(() {
-          // Filtramos usando la propiedad real '.stock' de la entidad Product
           _numCriticos = productos.where((p) => p.stock <= 10).length;
           _isLoadingStock = false;
         });
@@ -39,6 +53,52 @@ class _DashboardScreenState extends State<DashboardScreen> {
       if (mounted) {
         setState(() => _isLoadingStock = false);
       }
+    }
+  }
+
+  Future<void> _cargarPedidosPendientes() async {
+    try {
+      final pedidos = await _orderService.obtenerPedidos();
+
+      if (mounted) {
+        setState(() {
+          _pedidosPendientes = pedidos.where((p) => p.isPendiente).length;
+
+          _pedidosUrgentes = pedidos.where((p) => p.isUrgente).length;
+        });
+      }
+    } catch (e) {
+      debugPrint('Error cargando pedidos: $e');
+    }
+  }
+
+  Future<void> _cargarVentas() async {
+    try {
+      final ventas = await _saleService.obtenerVentas();
+
+      final Map<int, double> ventasPorMes = {};
+
+      double total = 0;
+
+      for (final venta in ventas) {
+        if (venta.estado != 'ACTIVA') continue;
+
+        total += venta.total;
+
+        final mes = venta.fechaVenta.month;
+
+        ventasPorMes[mes] = (ventasPorMes[mes] ?? 0) + venta.total;
+      }
+
+      if (mounted) {
+        setState(() {
+          _ventasPorMes = ventasPorMes;
+          _ventasTotales = total;
+          _loadingVentas = false;
+        });
+      }
+    } catch (e) {
+      debugPrint('Error cargando ventas: $e');
     }
   }
 
@@ -99,20 +159,73 @@ class _DashboardScreenState extends State<DashboardScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const StatsCard(
-                    title: 'VENTAS TOTALES',
-                    value: '\$12,450.00',
-                    percentage: '+12%',
-                    isMain: true,
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(22),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(24),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.02),
+                          blurRadius: 15,
+                          offset: const Offset(0, 8),
+                        ),
+                      ],
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'VENTAS TOTALES',
+                          style: TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w700,
+                            color: Colors.grey.shade500,
+                            letterSpacing: 1.2,
+                          ),
+                        ),
+                        const SizedBox(height: 6),
+                        Text(
+                          _loadingVentas
+                              ? '...'
+                              : NumberFormat.currency(
+                                  symbol: '\$',
+                                  decimalDigits: 0,
+                                  locale: 'es_CO',
+                                ).format(_ventasTotales),
+                          style: const TextStyle(
+                            fontSize: 32,
+                            fontWeight: FontWeight.bold,
+                            color: Color(0xFF1A1A1A),
+                            letterSpacing: -0.5,
+                          ),
+                        ),
+                        const SizedBox(height: 24),
+
+                        SizedBox(
+                          height: 300,
+                          child: _loadingVentas
+                              ? const Center(
+                                  child: CircularProgressIndicator(
+                                    color: Color(0xFFFFCC00),
+                                  ),
+                                )
+                              : SalesChart(ventasPorMes: _ventasPorMes),
+                        ),
+                      ],
+                    ),
                   ),
-                  const SizedBox(height: 16),
+
+                  const SizedBox(height: 20),
+
                   Row(
                     children: [
-                      const Expanded(
+                      Expanded(
                         child: StatsCard(
                           title: 'Pedidos Pendientes',
-                          value: '24',
-                          subtitle: '5 urgentes',
+                          value: '$_pedidosPendientes',
+                          subtitle: '$_pedidosUrgentes urgentes',
                           icon: Icons.shopping_cart_outlined,
                           accentColor: Colors.blue,
                         ),
@@ -121,7 +234,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       Expanded(
                         child: StatsCard(
                           title: 'Stock Crítico',
-                          // Mostramos un guión o indicador pequeño si sigue cargando el número
                           value: _isLoadingStock ? '...' : '$_numCriticos',
                           subtitle: _numCriticos > 0
                               ? 'Requiere atención'
@@ -137,7 +249,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
                   const SizedBox(height: 32),
 
-                  // Título Actividad
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -196,7 +307,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 }
 
-// Widget de la campana con el punto rojo
 class _NotificationBadge extends StatelessWidget {
   @override
   Widget build(BuildContext context) {

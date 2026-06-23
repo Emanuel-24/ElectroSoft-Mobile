@@ -1,5 +1,3 @@
-// MODELO PARA LA LISTA INFERIOR DE ACTIVIDADES RECIENTES EN EL DASHBOARD
-
 import 'package:flutter/material.dart';
 
 class RecentActivity {

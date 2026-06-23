@@ -1,11 +1,11 @@
-import 'package:electrosoft/core/theme/app_theme.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
+import '../../../../core/theme/app_theme.dart';
 import '../../domain/entities/shopping.dart';
 import '../screens/shopping_detail_screen.dart';
-import 'package:intl/intl.dart';
 
 class CompraCard extends StatelessWidget {
-  final Compra compra;
+  final Shopping compra;
 
   const CompraCard({super.key, required this.compra});
 
@@ -18,12 +18,29 @@ class CompraCard extends StatelessWidget {
     return formatCurrency.format(precio);
   }
 
-  String _formatearFecha(DateTime fecha) {
-    return DateFormat('dd/MM/yyyy').format(fecha);
+  String _obtenerFecha() {
+    if (compra.purchaseDate != null && compra.purchaseDate!.isNotEmpty) {
+      return compra.purchaseDate!;
+    }
+    return DateFormat('dd/MM/yyyy').format(compra.createdAt);
+  }
+
+  Color _obtenerColorEstado(String estado) {
+    switch (estado.toUpperCase()) {
+      case 'ACTIVA':
+        return AppTheme.verde;
+      case 'ANULADA':
+        return Colors.redAccent;
+      default:
+        return Colors.grey;
+    }
   }
 
   @override
   Widget build(BuildContext context) {
+    final Color estadoColor = _obtenerColorEstado(compra.estado);
+    final int cantidadItems = compra.products.length;
+
     return GestureDetector(
       onTap: () {
         Navigator.push(
@@ -50,74 +67,64 @@ class CompraCard extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Encabezado: ID y Estado
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(
-                    'COMPRA #${compra.id}',
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: AppTheme.textDark,
+                  Expanded(
+                    child: Text(
+                      'FACTURA #${compra.invoiceNumber}',
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: AppTheme.textDark,
+                      ),
                     ),
                   ),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 4,
+                    ),
                     decoration: BoxDecoration(
-                      color: compra.estado.color.withValues(alpha: 0.1),
+                      color: estadoColor.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(12),
                     ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Container(
-                          width: 8,
-                          height: 8,
-                          decoration: BoxDecoration(
-                            color: compra.estado.color,
-                            shape: BoxShape.circle,
-                          ),
-                        ),
-                        const SizedBox(width: 6),
-                        Text(
-                          compra.estado.displayName.toUpperCase(),
-                          style: TextStyle(
-                            fontSize: 11,
-                            fontWeight: FontWeight.w600,
-                            color: compra.estado.color,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 12),
-              // Proveedor
-              Row(
-                children: [
-                  const Icon(Icons.business, size: 16, color: AppTheme.textMuted),
-                  const SizedBox(width: 8),
-                  Expanded(
                     child: Text(
-                      compra.proveedor,
-                      style: const TextStyle(
-                        fontSize: 14,
-                        color: AppTheme.textDark,
+                      compra.estado.toUpperCase(),
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.bold,
+                        color: estadoColor,
                       ),
                     ),
                   ),
                 ],
               ),
+
+              const SizedBox(height: 14),
+
+              Text(
+                compra.providerName ?? 'Proveedor desconocido',
+                style: const TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w600,
+                  color: AppTheme.textDark,
+                ),
+              ),
+
               const SizedBox(height: 8),
-              // Fecha
+
               Row(
                 children: [
-                  const Icon(Icons.calendar_today, size: 16, color: AppTheme.textMuted),
+                  const Icon(
+                    Icons.calendar_today,
+                    size: 16,
+                    color: AppTheme.textMuted,
+                  ),
                   const SizedBox(width: 8),
                   Text(
-                    _formatearFecha(compra.fecha),
+                    _obtenerFecha(),
                     style: const TextStyle(
                       fontSize: 14,
                       color: AppTheme.textMuted,
@@ -126,7 +133,7 @@ class CompraCard extends StatelessWidget {
                 ],
               ),
               const SizedBox(height: 12),
-              // Total y Items
+
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -137,14 +144,16 @@ class CompraCard extends StatelessWidget {
                         'TOTAL',
                         style: TextStyle(
                           fontSize: 11,
-                          fontWeight: FontWeight.w600,
+                          fontWeight: FontWeight.bold,
                           color: AppTheme.textMuted,
+                          letterSpacing: 0.5,
                         ),
                       ),
+                      const SizedBox(height: 2),
                       Text(
                         _formatearPrecio(compra.total),
                         style: const TextStyle(
-                          fontSize: 18,
+                          fontSize: 19,
                           fontWeight: FontWeight.bold,
                           color: AppTheme.primary,
                         ),
@@ -158,15 +167,17 @@ class CompraCard extends StatelessWidget {
                         'PRODUCTOS',
                         style: TextStyle(
                           fontSize: 11,
-                          fontWeight: FontWeight.w600,
+                          fontWeight: FontWeight.bold,
                           color: AppTheme.textMuted,
+                          letterSpacing: 0.5,
                         ),
                       ),
+                      const SizedBox(height: 2),
                       Text(
-                        '${compra.cantidadItems} items',
+                        '$cantidadItems items',
                         style: const TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
+                          fontSize: 15,
+                          fontWeight: FontWeight.bold,
                           color: AppTheme.textDark,
                         ),
                       ),

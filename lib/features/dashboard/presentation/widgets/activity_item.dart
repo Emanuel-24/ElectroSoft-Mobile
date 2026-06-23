@@ -1,5 +1,4 @@
 // FILA DE ACTIVIDAD RECIENTE EN EL DASHBOARD
-
 import 'package:flutter/material.dart';
 import '../../../../core/theme/app_theme.dart';
 
@@ -27,7 +26,6 @@ class ActivityItem extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
-        // Sombra muy suave como la de la imagen
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.03),
@@ -38,7 +36,6 @@ class ActivityItem extends StatelessWidget {
       ),
       child: Row(
         children: [
-          // Círculo del icono con fondo claro
           Container(
             padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
@@ -71,7 +68,6 @@ class ActivityItem extends StatelessWidget {
               ],
             ),
           ),
-          // Tiempo a la derecha
           Text(
             time,
             style: TextStyle(fontSize: 11, color: Colors.grey.shade400),

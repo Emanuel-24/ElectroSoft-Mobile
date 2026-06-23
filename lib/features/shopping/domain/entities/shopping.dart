@@ -1,60 +1,56 @@
-import 'package:flutter/material.dart';
-
-class Compra {
+// --- Entidad Principal de Compra ---
+class Shopping {
   final String id;
-  final String proveedor;
-  final DateTime fecha;
+  final String invoiceNumber;
+  final String providerId;
+  final String? providerName;
+  final List<ShoppingProduct> products;
   final double total;
-  final List<ItemCompra> items;
-  final EstadoCompra estado;
+  final String estado;
+  final String? purchaseDate;
+  final DateTime createdAt;
+  final InfoAnulacion? infoAnulacion;
 
-  const Compra({
+  const Shopping({
     required this.id,
-    required this.proveedor,
-    required this.fecha,
+    required this.invoiceNumber,
+    required this.providerId,
+    this.providerName,
+    required this.products,
     required this.total,
-    required this.items,
     required this.estado,
+    this.purchaseDate,
+    required this.createdAt,
+    this.infoAnulacion,
   });
 
-  int get cantidadItems => items.length;
+  bool get isAnulada => estado == 'ANULADA';
 }
 
-class ItemCompra {
-  final String productoId;
-  final String productoNombre;
-  final int cantidad;
-  final double precioUnitario;
+class ShoppingProduct {
+  final String productId;
+  final String? productName;
+  final int quantity;
+  final double purchasePrice;
+  final double salePrice;
+  final bool useSuggestedPrice;
 
-  const ItemCompra({
-    required this.productoId,
-    required this.productoNombre,
-    required this.cantidad,
-    required this.precioUnitario,
+  const ShoppingProduct({
+    required this.productId,
+    this.productName,
+    required this.quantity,
+    required this.purchasePrice,
+    required this.salePrice,
+    required this.useSuggestedPrice,
   });
-
-  double get subtotal => cantidad * precioUnitario;
 }
 
-enum EstadoCompra {
-  activa,
-  anulada;
+class InfoAnulacion {
+  final String? motivo;
+  final DateTime? fechaAnulacion;
 
-  String get displayName {
-    switch (this) {
-      case EstadoCompra.activa:
-        return 'Activa';
-      case EstadoCompra.anulada:
-        return 'Anulada';
-    }
-  }
-
-  Color get color {
-    switch (this) {
-      case EstadoCompra.activa:
-        return Colors.green;
-      case EstadoCompra.anulada:
-        return Colors.red;
-    }
-  }
+  const InfoAnulacion({
+    this.motivo,
+    this.fechaAnulacion,
+  });
 }

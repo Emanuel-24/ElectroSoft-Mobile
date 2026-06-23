@@ -77,7 +77,10 @@ class _MainShellState extends State<MainShell> {
           usuario: widget.usuario,
         );
       case 2:
-        return ComprasScreen(searchQuery: _searchQuery);
+        return ComprasScreen(
+          searchQuery: _searchQuery,
+          usuario: widget.usuario,
+        );
       case 3:
         return CatProductosScreen(
           searchQuery: _searchQuery,

@@ -7,6 +7,8 @@ import '../screens/notifications_screen.dart';
 import '../../../products/data/services/product_service.dart';
 import '../../data/services/order_service.dart';
 import '../../data/services/sale_service.dart';
+import 'package:electrosoft/core/services/socket_service.dart';
+import 'package:electrosoft/core/services/notification_service.dart';
 import 'package:intl/intl.dart';
 
 class DashboardScreen extends StatefulWidget {
@@ -28,8 +30,20 @@ class _DashboardScreenState extends State<DashboardScreen> {
   int _pedidosUrgentes = 0;
   double _ventasTotales = 0;
 
+  final NotificationServiceAPI _notificationServiceAPI = NotificationServiceAPI();
+  List<dynamic> _recentNotifications = [];
+  int _unreadNotifications = 0;
+
   bool _loadingVentas = true;
   bool _isLoadingStock = true;
+  bool _loadingNotifications = true;
+
+  int _selectedYear = DateTime.now().year;
+  final List<int> _availableYears = [
+    DateTime.now().year - 2,
+    DateTime.now().year - 1,
+    DateTime.now().year,
+  ];
 
   @override
   void initState() {
@@ -38,6 +52,48 @@ class _DashboardScreenState extends State<DashboardScreen> {
     _calcularStockCritico();
     _cargarPedidosPendientes();
     _cargarVentas();
+    _cargarNotificaciones();
+
+    SocketService().initConnection();
+    SocketService().onNewNotification((data) {
+      if (mounted) {
+        setState(() {
+          _recentNotifications.insert(0, data);
+          if (_recentNotifications.length > 3) {
+            _recentNotifications.removeLast();
+          }
+          _unreadNotifications++;
+        });
+        
+        // Refrescar tarjetas de métricas en vivo
+        _calcularStockCritico();
+        _cargarPedidosPendientes();
+        _cargarVentas();
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    SocketService().disconnect();
+    super.dispose();
+  }
+
+  Future<void> _cargarNotificaciones() async {
+    try {
+      final notifications = await _notificationServiceAPI.getRecentNotifications();
+      if (mounted) {
+        setState(() {
+          _recentNotifications = notifications.take(3).toList();
+          _unreadNotifications = notifications.where((n) => n['isRead'] == false).length;
+          _loadingNotifications = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() => _loadingNotifications = false);
+      }
+    }
   }
 
   Future<void> _calcularStockCritico() async {
@@ -75,19 +131,17 @@ class _DashboardScreenState extends State<DashboardScreen> {
   Future<void> _cargarVentas() async {
     try {
       final ventas = await _saleService.obtenerVentas();
-
       final Map<int, double> ventasPorMes = {};
-
       double total = 0;
 
       for (final venta in ventas) {
         if (venta.estado != 'ACTIVA') continue;
-
-        total += venta.total;
+        if (venta.fechaVenta.year != _selectedYear) continue;
 
         final mes = venta.fechaVenta.month;
-
         ventasPorMes[mes] = (ventasPorMes[mes] ?? 0) + venta.total;
+
+        total += venta.total;
       }
 
       if (mounted) {
@@ -99,6 +153,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
       }
     } catch (e) {
       debugPrint('Error cargando ventas: $e');
+      if (mounted) {
+        setState(() {
+          _loadingVentas = false;
+        });
+      }
     }
   }
 
@@ -147,7 +206,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       ),
                     ],
                   ),
-                  _NotificationBadge(),
+                  _NotificationBadge(unreadCount: _unreadNotifications),
                 ],
               ),
             ),
@@ -159,6 +218,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  _buildFilters(),
+                  const SizedBox(height: 24),
                   Container(
                     width: double.infinity,
                     padding: const EdgeInsets.all(22),
@@ -276,27 +337,59 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     ],
                   ),
 
-                  const ActivityItem(
-                    title: 'Nuevo pedido #10234',
-                    subtitle: 'Cliente: Juan Pérez',
-                    time: 'Hace 10m',
-                    icon: Icons.check_circle_outline,
-                    iconColor: Colors.green,
-                  ),
-                  const ActivityItem(
-                    title: 'Usuario registrado',
-                    subtitle: 'Rol: Cliente',
-                    time: 'Hace 45m',
-                    icon: Icons.person_add_outlined,
-                    iconColor: Colors.blue,
-                  ),
-                  const ActivityItem(
-                    title: 'Nuevo pedido #10235',
-                    subtitle: 'Cliente: Juan Santa',
-                    time: 'Hace 1h',
-                    icon: Icons.check_circle_outline,
-                    iconColor: Colors.green,
-                  ),
+                  if (_loadingNotifications)
+                    const Center(
+                      child: Padding(
+                        padding: EdgeInsets.all(20.0),
+                        child: CircularProgressIndicator(color: Colors.orange),
+                      ),
+                    )
+                  else if (_recentNotifications.isEmpty)
+                    const Center(
+                      child: Padding(
+                        padding: EdgeInsets.all(20.0),
+                        child: Text('No hay actividad reciente'),
+                      ),
+                    )
+                  else
+                    ..._recentNotifications.map((notif) {
+                      IconData iconData = Icons.notifications;
+                      Color iconColor = Colors.orange;
+
+                      if (notif['type'] == 'SALE') {
+                        iconData = Icons.shopping_cart_checkout;
+                        iconColor = Colors.green;
+                      } else if (notif['type'] == 'USER') {
+                        iconData = Icons.person_add_outlined;
+                        iconColor = Colors.blue;
+                      } else if (notif['type'] == 'PAYMENT') {
+                        iconData = Icons.attach_money;
+                        iconColor = Colors.amber;
+                      }
+
+                      String timeText = 'Ahora';
+                      if (notif['createdAt'] != null) {
+                        try {
+                          final date = DateTime.parse(notif['createdAt']);
+                          final diff = DateTime.now().difference(date);
+                          if (diff.inMinutes < 60) {
+                            timeText = 'Hace ${diff.inMinutes}m';
+                          } else if (diff.inHours < 24) {
+                            timeText = 'Hace ${diff.inHours}h';
+                          } else {
+                            timeText = 'Hace ${diff.inDays}d';
+                          }
+                        } catch (_) {}
+                      }
+
+                      return ActivityItem(
+                        title: notif['title'] ?? 'Notificación',
+                        subtitle: notif['description'] ?? '',
+                        time: timeText,
+                        icon: iconData,
+                        iconColor: iconColor,
+                      );
+                    }),
                 ],
               ),
             ),
@@ -305,9 +398,85 @@ class _DashboardScreenState extends State<DashboardScreen> {
       ),
     );
   }
+  Widget _buildFilters() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              'Rendimiento',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: Colors.grey.shade800,
+                letterSpacing: 0.5,
+              ),
+            ),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(color: Colors.grey.shade200),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.02),
+                    blurRadius: 4,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: DropdownButtonHideUnderline(
+                child: DropdownButton<int>(
+                  value: _selectedYear,
+                  dropdownColor: Colors.white,
+                  focusColor: Colors.transparent,
+                  borderRadius: BorderRadius.circular(16),
+                  icon: const Icon(Icons.keyboard_arrow_down, color: Colors.black54),
+                  style: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w700,
+                    color: Colors.black87,
+                  ),
+                  onChanged: (int? newValue) {
+                    if (newValue != null) {
+                      setState(() {
+                        _selectedYear = newValue;
+                        _loadingVentas = true;
+                      });
+                      _cargarVentas();
+                    }
+                  },
+                  items: _availableYears.map<DropdownMenuItem<int>>((int value) {
+                    final isSelected = value == _selectedYear;
+                    return DropdownMenuItem<int>(
+                      value: value,
+                      child: Text(
+                        value.toString(),
+                        style: TextStyle(
+                          color: Colors.black87,
+                          fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
+                        ),
+                      ),
+                    );
+                  }).toList(),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
 }
 
 class _NotificationBadge extends StatelessWidget {
+  final int unreadCount;
+
+  const _NotificationBadge({required this.unreadCount});
+
   @override
   Widget build(BuildContext context) {
     return InkWell(
@@ -332,19 +501,20 @@ class _NotificationBadge extends StatelessWidget {
               color: Colors.black87,
             ),
           ),
-          Positioned(
-            right: 10,
-            top: 10,
-            child: Container(
-              width: 9,
-              height: 9,
-              decoration: BoxDecoration(
-                color: Colors.red,
-                shape: BoxShape.circle,
-                border: Border.all(color: Colors.white, width: 1.5),
+          if (unreadCount > 0)
+            Positioned(
+              right: 10,
+              top: 10,
+              child: Container(
+                width: 10,
+                height: 10,
+                decoration: BoxDecoration(
+                  color: Colors.red,
+                  shape: BoxShape.circle,
+                  border: Border.all(color: Colors.white, width: 1.5),
+                ),
               ),
             ),
-          ),
         ],
       ),
     );

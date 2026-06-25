@@ -11,7 +11,7 @@ class OrderService {
     final token = await _storage.read(key: 'auth_token');
 
     final response = await http.get(
-      Uri.parse(baseUrl),
+      Uri.parse('$baseUrl?t=${DateTime.now().millisecondsSinceEpoch}'),
       headers: {
         'Content-Type': 'application/json',
         if (token != null) 'Authorization': 'Bearer $token',

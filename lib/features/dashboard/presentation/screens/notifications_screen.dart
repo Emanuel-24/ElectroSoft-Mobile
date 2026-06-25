@@ -1,8 +1,42 @@
 import 'package:flutter/material.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../../../core/services/notification_service.dart';
 
-class NotificationsScreen extends StatelessWidget {
+class NotificationsScreen extends StatefulWidget {
   const NotificationsScreen({super.key});
+
+  @override
+  State<NotificationsScreen> createState() => _NotificationsScreenState();
+}
+
+class _NotificationsScreenState extends State<NotificationsScreen> {
+  final NotificationServiceAPI _notificationServiceAPI = NotificationServiceAPI();
+  List<dynamic> _notifications = [];
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadNotifications();
+  }
+
+  Future<void> _loadNotifications() async {
+    try {
+      final notifs = await _notificationServiceAPI.getRecentNotifications();
+      if (mounted) {
+        setState(() {
+          _notifications = notifs;
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -21,69 +55,55 @@ class NotificationsScreen extends StatelessWidget {
         ),
         centerTitle: true,
       ),
-      body: ListView(
-        padding: const EdgeInsets.all(16),
-        children: [
-          _sectionTitle('HOY'),
-          _notificationItem(
-            title: 'Stock Crítico',
-            description: 'El producto "Bombillo LED 12W" alcanzó el mínimo de 10 unidades.',
-            time: 'Hace 30 min',
-            icon: Icons.warning_amber_rounded,
-            iconColor: Colors.redAccent,
-            isUnread: true,
-          ),
-          _notificationItem(
-            title: 'Nueva Venta',
-            description: 'Se ha registrado una venta por \$450,000.',
-            time: 'Hace 30 min',
-            icon: Icons.monetization_on_outlined,
-            iconColor: Colors.green,
-            isUnread: true,
-          ),
-          _notificationItem(
-            title: 'Stock Crítico',
-            description: 'El producto "Cable THW Cal.12 (100m)" alcanzó el mínimo de 10 unidades.',
-            time: 'Hace 2 horas',
-            icon: Icons.warning_amber_rounded,
-            iconColor: Colors.redAccent,
-            isUnread: true,
-          ),
-          const SizedBox(height: 20),
-          _sectionTitle('AYER'),
-          _notificationItem(
-            title: 'Nuevo Registro',
-            description: 'Un nuevo cliente se ha unido a la plataforma.',
-            time: 'Ayer, 5:30 PM',
-            icon: Icons.person_add_alt_1_rounded,
-            iconColor: Colors.orange,
-            isUnread: false,
-          ),
-          _notificationItem(
-            title: 'Actualización de Perfil',
-            description: 'Has cambiado tu foto de perfil correctamente.',
-            time: 'Ayer, 4:30 PM',
-            icon: Icons.person_outline_rounded,
-            iconColor: Colors.blueAccent,
-            isUnread: false,
-          ),
-        ],
-      ),
-    );
-  }
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator(color: Colors.orange))
+          : _notifications.isEmpty
+              ? const Center(child: Text("No hay notificaciones disponibles"))
+              : ListView.builder(
+                  padding: const EdgeInsets.all(16),
+                  itemCount: _notifications.length,
+                  itemBuilder: (context, index) {
+                    final notif = _notifications[index];
+                    
+                    IconData iconData = Icons.notifications;
+                    Color iconColor = Colors.orange;
 
-  Widget _sectionTitle(String text) {
-    return Padding(
-      padding: const EdgeInsets.only(left: 4, bottom: 12, top: 8),
-      child: Text(
-        text,
-        style: const TextStyle(
-          fontSize: 12,
-          fontWeight: FontWeight.bold,
-          color: AppTheme.textMuted,
-          letterSpacing: 1.1,
-        ),
-      ),
+                    if (notif['type'] == 'SALE') {
+                      iconData = Icons.shopping_cart_checkout;
+                      iconColor = Colors.green;
+                    } else if (notif['type'] == 'USER') {
+                      iconData = Icons.person_add_outlined;
+                      iconColor = Colors.blue;
+                    } else if (notif['type'] == 'PAYMENT') {
+                      iconData = Icons.attach_money;
+                      iconColor = Colors.amber;
+                    }
+
+                    String timeText = 'Ahora';
+                    if (notif['createdAt'] != null) {
+                      try {
+                        final date = DateTime.parse(notif['createdAt']);
+                        final diff = DateTime.now().difference(date);
+                        if (diff.inMinutes < 60) {
+                          timeText = 'Hace ${diff.inMinutes}m';
+                        } else if (diff.inHours < 24) {
+                          timeText = 'Hace ${diff.inHours}h';
+                        } else {
+                          timeText = 'Hace ${diff.inDays}d';
+                        }
+                      } catch (_) {}
+                    }
+
+                    return _notificationItem(
+                      title: notif['title'] ?? 'Notificación',
+                      description: notif['description'] ?? '',
+                      time: timeText,
+                      icon: iconData,
+                      iconColor: iconColor,
+                      isUnread: notif['isRead'] == false,
+                    );
+                  },
+                ),
     );
   }
 
@@ -114,7 +134,7 @@ class NotificationsScreen extends StatelessWidget {
         leading: Container(
           padding: const EdgeInsets.all(10),
           decoration: BoxDecoration(
-            color: iconColor.withValues(alpha: 0.01),
+            color: iconColor.withOpacity(0.1),
             shape: BoxShape.circle,
           ),
           child: Icon(icon, color: iconColor, size: 24),
@@ -122,7 +142,7 @@ class NotificationsScreen extends StatelessWidget {
         title: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
+            Expanded(child: Text(title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15))),
             if (isUnread)
               const CircleAvatar(radius: 4, backgroundColor: AppTheme.primary),
           ],

@@ -5,7 +5,10 @@ import 'package:intl/intl.dart';
 class SalesChart extends StatelessWidget {
   final Map<int, double> ventasPorMes;
 
-  const SalesChart({super.key, required this.ventasPorMes});
+  const SalesChart({
+    super.key,
+    required this.ventasPorMes,
+  });
 
   @override
   Widget build(BuildContext context) {

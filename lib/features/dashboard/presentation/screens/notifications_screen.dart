@@ -13,6 +13,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
   final NotificationServiceAPI _notificationServiceAPI = NotificationServiceAPI();
   List<dynamic> _notifications = [];
   bool _isLoading = true;
+  bool _hasChanges = false;
 
   @override
   void initState() {
@@ -38,6 +39,124 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     }
   }
 
+  Future<void> _removeNotification(int index) async {
+    final notification = _notifications[index];
+    final id = notification['_id'] ?? notification['id']?.toString();
+
+    if (id == null || id.isEmpty) {
+      setState(() {
+        _notifications.removeAt(index);
+        _hasChanges = true;
+      });
+      return;
+    }
+
+    try {
+      await _notificationServiceAPI.deleteNotification(id);
+    } catch (_) {
+      // Si el backend no soporta la eliminación o falla, ocultamos localmente igualmente.
+    }
+
+    if (mounted) {
+      setState(() {
+        _notifications.removeAt(index);
+        _hasChanges = true;
+      });
+    }
+  }
+
+  Future<void> _markAsRead(int index) async {
+    final notification = _notifications[index];
+    final id = notification['_id'] ?? notification['id']?.toString();
+
+    if (id == null || id.isEmpty) {
+      setState(() {
+        notification['isRead'] = true;
+        _hasChanges = true;
+      });
+      return;
+    }
+
+    await _notificationServiceAPI.markNotificationRead(id);
+
+    if (mounted) {
+      setState(() {
+        notification['isRead'] = true;
+        _hasChanges = true;
+      });
+    }
+  }
+
+  Future<void> _markAllAsRead() async {
+    if (_notifications.every((notification) => notification['isRead'] == true)) return;
+
+    try {
+      await _notificationServiceAPI.markAllNotificationsRead();
+      if (mounted) {
+        setState(() {
+          for (final notification in _notifications) {
+            notification['isRead'] = true;
+          }
+          _hasChanges = true;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(e.toString().replaceAll('Exception: ', ''))),
+        );
+      }
+    }
+  }
+
+  Future<void> _confirmClearAll() async {
+    if (_notifications.isEmpty) return;
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+        title: const Text('Eliminar todas las notificaciones'),
+        content: const Text('¿Deseas eliminar todas las notificaciones? Esta acción no se puede deshacer.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, false),
+            child: const Text('Cancelar', style: TextStyle(color: Colors.grey)),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, true),
+            child: const Text(
+              'Borrar todas',
+              style: TextStyle(color: Colors.redAccent, fontWeight: FontWeight.bold),
+            ),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true) return;
+
+    try {
+      await _notificationServiceAPI.clearNotifications();
+
+      if (mounted) {
+        setState(() {
+          _notifications.clear();
+          _hasChanges = true;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(e.toString().replaceAll('Exception: ', '')),
+            backgroundColor: Colors.redAccent,
+          ),
+        );
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -47,24 +166,44 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios_new_rounded, color: AppTheme.textDark, size: 20),
-          onPressed: () => Navigator.pop(context),
+          onPressed: () => Navigator.pop(context, _hasChanges),
         ),
         title: const Text(
           'Notificaciones',
           style: TextStyle(color: AppTheme.textDark, fontWeight: FontWeight.bold, fontSize: 18),
         ),
         centerTitle: true,
+        actions: [
+          if (_notifications.any((notification) => notification['isRead'] != true))
+            IconButton(
+              icon: const Icon(Icons.done_all, color: AppTheme.textDark),
+              tooltip: 'Marcar todas como leídas',
+              onPressed: _markAllAsRead,
+            ),
+          if (_notifications.isNotEmpty)
+            IconButton(
+              icon: const Icon(Icons.delete_outline_rounded, color: AppTheme.textDark),
+              tooltip: 'Borrar todas',
+              onPressed: _confirmClearAll,
+            ),
+        ],
       ),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator(color: Colors.orange))
-          : _notifications.isEmpty
-              ? const Center(child: Text("No hay notificaciones disponibles"))
-              : ListView.builder(
+      body: PopScope(
+        canPop: false,
+        onPopInvokedWithResult: (didPop, result) {
+          if (!didPop) Navigator.pop(context, _hasChanges);
+        },
+        child: _isLoading
+            ? const Center(child: CircularProgressIndicator(color: Colors.orange))
+            : _notifications.isEmpty
+                ? const Center(child: Text("No hay notificaciones disponibles"))
+                : ListView.builder(
                   padding: const EdgeInsets.all(16),
                   itemCount: _notifications.length,
                   itemBuilder: (context, index) {
                     final notif = _notifications[index];
-                    
+                    final bool isUnread = notif['isRead'] != true;
+
                     IconData iconData = Icons.notifications;
                     Color iconColor = Colors.orange;
 
@@ -100,11 +239,14 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                       time: timeText,
                       icon: iconData,
                       iconColor: iconColor,
-                      isUnread: notif['isRead'] == false,
+                      isUnread: isUnread,
+                      onDelete: () => _removeNotification(index),
+                      onMarkAsRead: isUnread ? () => _markAsRead(index) : null,
                     );
                   },
                 ),
-    );
+        ),
+      );
   }
 
   Widget _notificationItem({
@@ -114,13 +256,15 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     required IconData icon,
     required Color iconColor,
     required bool isUnread,
+    required VoidCallback onDelete,
+    VoidCallback? onMarkAsRead,
   }) {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
-        color: isUnread ? Colors.white : Colors.white.withValues(alpha: 0.07),
+        color: isUnread ? AppTheme.primaryLight.withValues(alpha: 0.3) : Colors.white,
         borderRadius: BorderRadius.circular(16),
-        border: isUnread ? Border.all(color: AppTheme.primary.withValues(alpha: 0.01), width: 1) : null,
+        border: isUnread ? Border.all(color: AppTheme.primary.withValues(alpha: 0.15), width: 1) : null,
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.03),
@@ -134,7 +278,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
         leading: Container(
           padding: const EdgeInsets.all(10),
           decoration: BoxDecoration(
-            color: iconColor.withOpacity(0.1),
+            color: iconColor.withValues(alpha: 0.1),
             shape: BoxShape.circle,
           ),
           child: Icon(icon, color: iconColor, size: 24),
@@ -156,8 +300,36 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
               style: const TextStyle(fontSize: 13, color: AppTheme.textDark, height: 1.3),
             ),
             const SizedBox(height: 8),
-            Text(time, style: const TextStyle(fontSize: 11, color: AppTheme.textMuted)),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(time, style: const TextStyle(fontSize: 11, color: AppTheme.textMuted)),
+                if (isUnread && onMarkAsRead != null)
+                  TextButton(
+                    style: TextButton.styleFrom(
+                      backgroundColor: Colors.white,
+                      foregroundColor: AppTheme.primary,
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      minimumSize: const Size(80, 36),
+                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                    ),
+                    onPressed: onMarkAsRead,
+                    child: const Text(
+                      'Marcar leído',
+                      style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+                    ),
+                  ),
+              ],
+            ),
           ],
+        ),
+        trailing: IconButton(
+          icon: const Icon(Icons.close_rounded, size: 20, color: AppTheme.textMuted),
+          tooltip: 'Eliminar',
+          onPressed: onDelete,
         ),
       ),
     );

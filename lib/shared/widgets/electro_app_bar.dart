@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../core/theme/app_theme.dart';
 import '../../features/auth/data/services/auth_service.dart';
 import '../../features/auth/presentation/screens/login_screen.dart';
+import '../../features/profile/domain/avatar_options.dart';
 
 class ElectroAppBar extends StatelessWidget implements PreferredSizeWidget {
   final String title;
@@ -11,6 +12,8 @@ class ElectroAppBar extends StatelessWidget implements PreferredSizeWidget {
   final ValueChanged<String>? onSearch;
   final VoidCallback? onAvatarTap;
   final String? avatarUrl;
+  final String avatarLetter;
+  final String avatarColor;
 
   const ElectroAppBar({
     super.key,
@@ -21,6 +24,8 @@ class ElectroAppBar extends StatelessWidget implements PreferredSizeWidget {
     this.onSearch,
     this.onAvatarTap,
     this.avatarUrl,
+    this.avatarLetter = 'A',
+    this.avatarColor = '#273bf1',
   });
 
   bool get _soloLogo => title.isEmpty && !showSearch;
@@ -42,7 +47,12 @@ class ElectroAppBar extends StatelessWidget implements PreferredSizeWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               const _Logo(),
-              _Avatar(url: avatarUrl),
+              _Avatar(
+                url: avatarUrl,
+                letter: avatarLetter,
+                color: avatarColor,
+                onAvatarTap: onAvatarTap,
+              ),
             ],
           ),
           if (!_soloLogo) ...[
@@ -119,7 +129,16 @@ class _Logo extends StatelessWidget {
 
 class _Avatar extends StatelessWidget {
   final String? url;
-  const _Avatar({this.url});
+  final String letter;
+  final String color;
+  final VoidCallback? onAvatarTap;
+
+  const _Avatar({
+    this.url,
+    required this.letter,
+    required this.color,
+    this.onAvatarTap,
+  });
 
   void _confirmarCerrarSesion(BuildContext context) {
     final AuthService authService = AuthService();
@@ -169,6 +188,8 @@ class _Avatar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final bool hasImage = url != null && url!.trim().isNotEmpty;
+
     return PopupMenuButton<String>(
       position: PopupMenuPosition.under,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -178,17 +199,40 @@ class _Avatar extends StatelessWidget {
       onSelected: (value) {
         if (value == 'logout') {
           _confirmarCerrarSesion(context);
+        } else if (value == 'profile') {
+          onAvatarTap?.call();
         }
       },
       child: CircleAvatar(
         radius: 20,
-        backgroundColor: AppTheme.avatarBg,
-        backgroundImage: url != null ? NetworkImage(url!) : null,
-        child: url == null
-            ? const Icon(Icons.person_rounded, color: Colors.white, size: 22)
+        backgroundColor: avatarColorFromHex(color),
+        backgroundImage: hasImage ? NetworkImage(url!.trim()) : null,
+        child: !hasImage
+            ? Text(
+                letter.trim().isEmpty
+                    ? 'A'
+                    : letter.trim().substring(0, 1).toUpperCase(),
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 18,
+                ),
+              )
             : null,
       ),
       itemBuilder: (context) => [
+        if (onAvatarTap != null)
+          const PopupMenuItem<String>(
+            value: 'profile',
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(Icons.edit_outlined, color: AppTheme.primary, size: 20),
+                SizedBox(width: 12),
+                Text('Editar perfil'),
+              ],
+            ),
+          ),
         PopupMenuItem<String>(
           value: 'logout',
           child: Row(

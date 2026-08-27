@@ -1,10 +1,11 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import '../../../../core/constants/app_config.dart';
 import '../../domain/entities/user.dart';
 
 class UserService {
-  static const String baseUrl = 'http://localhost:4000/api/users';
+  static const String baseUrl = '${AppConfig.apiBaseUrl}/users';
   final _storage = const FlutterSecureStorage();
 
   Future<List<Usuario>> obtenerUsuarios() async {

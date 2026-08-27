@@ -36,6 +36,9 @@ class UserSession {
   final List<String> permissions;
   final bool isActive;
   final String documentNumber;
+  final String avatar;
+  final String avatarLetter;
+  final String avatarColor;
 
   UserSession({
     required this.id,
@@ -46,16 +49,29 @@ class UserSession {
     required this.permissions,
     required this.isActive,
     required this.documentNumber,
+    this.avatar = '',
+    this.avatarLetter = 'A',
+    this.avatarColor = '#273bf1',
   });
 
-  factory UserSession.fromMap(Map<String, dynamic> json) => UserSession(
-    id: json["id"] ?? "",
-    fullName: json["fullName"] ?? "",
-    email: json["email"] ?? "",
-    phone: json["phone"] ?? "",
-    role: json["role"] ?? "",
-    permissions: List<String>.from(json["permissions"] ?? []),
-    isActive: json["isActive"] ?? false,
-    documentNumber: json["documentNumber"] ?? "",
-  );
+  factory UserSession.fromMap(Map<String, dynamic> json) {
+    final dynamic rawRole = json["role"] ?? "";
+    final String roleName = rawRole is Map<String, dynamic>
+        ? (rawRole["name"] ?? rawRole["roleName"] ?? "")
+        : rawRole.toString();
+
+    return UserSession(
+      id: json["id"] ?? "",
+      fullName: json["fullName"] ?? "",
+      email: json["email"] ?? "",
+      phone: json["phone"] ?? "",
+      role: roleName,
+      permissions: List<String>.from(json["permissions"] ?? []),
+      isActive: json["isActive"] ?? false,
+      documentNumber: json["documentNumber"] ?? "",
+      avatar: json["avatar"] ?? "",
+      avatarLetter: json["avatarLetter"] ?? "A",
+      avatarColor: json["avatarColor"] ?? "#273bf1",
+    );
+  }
 }

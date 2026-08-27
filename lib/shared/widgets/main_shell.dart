@@ -22,11 +22,15 @@ class MainShell extends StatefulWidget {
 class _MainShellState extends State<MainShell> {
   int _currentIndex = 0;
   String _searchQuery = '';
+  late String _avatarLetter;
+  late String _avatarColor;
 
   @override
   void initState() {
     super.initState();
     _currentIndex = widget.initialIndex;
+    _avatarLetter = widget.usuario.avatarLetter;
+    _avatarColor = widget.usuario.avatarColor;
   }
 
   static const List<_PageConfig> _pages = [
@@ -50,7 +54,9 @@ class _MainShellState extends State<MainShell> {
         showSearch: currentPage.showSearch,
         searchHint: currentPage.searchHint,
         onSearch: (value) => setState(() => _searchQuery = value),
-        avatarUrl: '',
+        avatarUrl: widget.usuario.avatar,
+        avatarLetter: _avatarLetter,
+        avatarColor: _avatarColor,
         onAvatarTap: () {
           setState(() => _currentIndex = 4);
         },
@@ -98,11 +104,15 @@ class _MainShellState extends State<MainShell> {
             roleName: widget.usuario.role,
             isActive: widget.usuario.isActive,
             lastAccess: DateTime.now().toIso8601String(),
+            avatar: widget.usuario.avatar,
+            avatarLetter: widget.usuario.avatarLetter,
+            avatarColor: widget.usuario.avatarColor,
           ),
-          onProfileUpdated: () {
-            debugPrint(
-              "Perfil actualizado en el backend, recargando contenedor...",
-            );
+          onProfileUpdated: (avatarLetter, avatarColor) {
+            setState(() {
+              _avatarLetter = avatarLetter;
+              _avatarColor = avatarColor;
+            });
           },
         );
       default:

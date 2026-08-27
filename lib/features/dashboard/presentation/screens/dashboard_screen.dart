@@ -5,9 +5,10 @@ import '../widgets/stats_card.dart';
 import '../widgets/activity_item.dart';
 import '../screens/notifications_screen.dart';
 import '../../../products/data/services/product_service.dart';
+import '../../../products/domain/entities/product.dart';
+import 'critical_stock_screen.dart';
 import '../../data/services/order_service.dart';
 import '../../data/services/sale_service.dart';
-import 'package:electrosoft/core/services/socket_service.dart';
 import 'package:electrosoft/core/services/notification_service.dart';
 import 'package:intl/intl.dart';
 
@@ -18,7 +19,8 @@ class DashboardScreen extends StatefulWidget {
   State<DashboardScreen> createState() => _DashboardScreenState();
 }
 
-class _DashboardScreenState extends State<DashboardScreen> {
+class _DashboardScreenState extends State<DashboardScreen>
+    with WidgetsBindingObserver {
   final ProductService _productService = ProductService();
   final OrderService _orderService = OrderService();
   final SaleService _saleService = SaleService();
@@ -26,11 +28,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
   Map<int, double> _ventasPorMes = {};
 
   int _numCriticos = 0;
+  List<Product> _productosCriticos = [];
   int _pedidosPendientes = 0;
   int _pedidosUrgentes = 0;
   double _ventasTotales = 0;
 
-  final NotificationServiceAPI _notificationServiceAPI = NotificationServiceAPI();
+  final NotificationServiceAPI _notificationServiceAPI =
+      NotificationServiceAPI();
   List<dynamic> _recentNotifications = [];
   int _unreadNotifications = 0;
 
@@ -45,27 +49,47 @@ class _DashboardScreenState extends State<DashboardScreen> {
     DateTime.now().year,
   ];
 
+  List<dynamic> _latestNotifications(Iterable<dynamic> notifications) {
+    final sortedNotifications = List<dynamic>.from(notifications);
+    sortedNotifications.sort((a, b) {
+      final dateA =
+          DateTime.tryParse(a['createdAt']?.toString() ?? '') ??
+          DateTime.fromMillisecondsSinceEpoch(0);
+      final dateB =
+          DateTime.tryParse(b['createdAt']?.toString() ?? '') ??
+          DateTime.fromMillisecondsSinceEpoch(0);
+      return dateB.compareTo(dateA);
+    });
+    return sortedNotifications.take(3).toList();
+  }
+
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
 
     _calcularStockCritico();
     _cargarPedidosPendientes();
     _cargarVentas();
-    _cargarNotificaciones();
-
-    SocketService().initConnection();
-    SocketService().onNewNotification((data) {
+    _notificationServiceAPI.startPolling((notifications, initial) async {
       if (mounted) {
         setState(() {
-          _recentNotifications.insert(0, data);
-          if (_recentNotifications.length > 3) {
-            _recentNotifications.removeLast();
+          if (initial) {
+            _recentNotifications = _latestNotifications(notifications);
+            _unreadNotifications = notifications
+                .where((n) => n['isRead'] == false)
+                .length;
+          } else {
+            _recentNotifications = _latestNotifications([
+              ...notifications,
+              ..._recentNotifications,
+            ]);
+            _unreadNotifications += notifications
+                .where((n) => n['isRead'] == false)
+                .length;
           }
-          _unreadNotifications++;
+          _loadingNotifications = false;
         });
-        
-        // Refrescar tarjetas de métricas en vivo
         _calcularStockCritico();
         _cargarPedidosPendientes();
         _cargarVentas();
@@ -75,17 +99,46 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   @override
   void dispose() {
-    SocketService().disconnect();
+    WidgetsBinding.instance.removeObserver(this);
+    _notificationServiceAPI.stopPolling();
     super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      _notificationServiceAPI.startPolling((notifications, initial) async {
+        if (!mounted) return;
+        setState(() {
+          if (initial) {
+            _recentNotifications = _latestNotifications(notifications);
+            _unreadNotifications = notifications
+                .where((n) => n['isRead'] == false)
+                .length;
+          } else {
+            _recentNotifications = _latestNotifications([
+              ...notifications,
+              ..._recentNotifications,
+            ]);
+            _unreadNotifications += notifications
+                .where((n) => n['isRead'] == false)
+                .length;
+          }
+        });
+      });
+    }
   }
 
   Future<void> _cargarNotificaciones() async {
     try {
-      final notifications = await _notificationServiceAPI.getRecentNotifications();
+      final notifications = await _notificationServiceAPI
+          .getRecentNotifications();
       if (mounted) {
         setState(() {
-          _recentNotifications = notifications.take(3).toList();
-          _unreadNotifications = notifications.where((n) => n['isRead'] == false).length;
+          _recentNotifications = _latestNotifications(notifications);
+          _unreadNotifications = notifications
+              .where((n) => n['isRead'] == false)
+              .length;
           _loadingNotifications = false;
         });
       }
@@ -102,6 +155,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
       if (mounted) {
         setState(() {
           _numCriticos = productos.where((p) => p.stock <= 10).length;
+          _productosCriticos = productos
+              .where((p) => p.status && p.stock >= 0 && p.stock <= 10)
+              .toList();
+          _numCriticos = _productosCriticos.length;
           _isLoadingStock = false;
         });
       }
@@ -135,13 +192,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
       double total = 0;
 
       for (final venta in ventas) {
-        if (venta.estado != 'ACTIVA') continue;
+        if (!venta.isActiva) continue;
         if (venta.fechaVenta.year != _selectedYear) continue;
 
         final mes = venta.fechaVenta.month;
-        ventasPorMes[mes] = (ventasPorMes[mes] ?? 0) + venta.total;
+        ventasPorMes[mes] = (ventasPorMes[mes] ?? 0) + venta.montoCobrado;
 
-        total += venta.total;
+        total += venta.montoCobrado;
       }
 
       if (mounted) {
@@ -206,7 +263,21 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       ),
                     ],
                   ),
-                  _NotificationBadge(unreadCount: _unreadNotifications),
+                  _NotificationBadge(
+                    unreadCount: _unreadNotifications,
+                    onTap: () async {
+                      final result = await Navigator.push<bool>(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const NotificationsScreen(),
+                        ),
+                      );
+
+                      if (mounted && result == true) {
+                        _cargarNotificaciones();
+                      }
+                    },
+                  ),
                 ],
               ),
             ),
@@ -238,7 +309,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'VENTAS TOTALES',
+                          'VENTAS DEL MES',
                           style: TextStyle(
                             fontSize: 13,
                             fontWeight: FontWeight.w700,
@@ -303,6 +374,16 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           accentColor: _numCriticos > 0
                               ? Colors.red
                               : Colors.green,
+                          onTap: _numCriticos > 0
+                              ? () => Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) => CriticalStockScreen(
+                                      products: _productosCriticos,
+                                    ),
+                                  ),
+                                )
+                              : null,
                         ),
                       ),
                     ],
@@ -321,13 +402,17 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         ),
                       ),
                       TextButton(
-                        onPressed: () {
-                          Navigator.push(
+                        onPressed: () async {
+                          final result = await Navigator.push<bool>(
                             context,
                             MaterialPageRoute(
                               builder: (context) => const NotificationsScreen(),
                             ),
                           );
+
+                          if (mounted && result == true) {
+                            _cargarNotificaciones();
+                          }
                         },
                         child: const Text(
                           'Ver todo',
@@ -398,6 +483,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
       ),
     );
   }
+
   Widget _buildFilters() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -434,7 +520,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   dropdownColor: Colors.white,
                   focusColor: Colors.transparent,
                   borderRadius: BorderRadius.circular(16),
-                  icon: const Icon(Icons.keyboard_arrow_down, color: Colors.black54),
+                  icon: const Icon(
+                    Icons.keyboard_arrow_down,
+                    color: Colors.black54,
+                  ),
                   style: const TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w700,
@@ -449,7 +538,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       _cargarVentas();
                     }
                   },
-                  items: _availableYears.map<DropdownMenuItem<int>>((int value) {
+                  items: _availableYears.map<DropdownMenuItem<int>>((
+                    int value,
+                  ) {
                     final isSelected = value == _selectedYear;
                     return DropdownMenuItem<int>(
                       value: value,
@@ -457,7 +548,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         value.toString(),
                         style: TextStyle(
                           color: Colors.black87,
-                          fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
+                          fontWeight: isSelected
+                              ? FontWeight.bold
+                              : FontWeight.w600,
                         ),
                       ),
                     );
@@ -474,18 +567,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
 class _NotificationBadge extends StatelessWidget {
   final int unreadCount;
+  final VoidCallback onTap;
 
-  const _NotificationBadge({required this.unreadCount});
+  const _NotificationBadge({required this.unreadCount, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
     return InkWell(
-      onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => const NotificationsScreen()),
-        );
-      },
+      onTap: onTap,
       borderRadius: BorderRadius.circular(12),
       child: Stack(
         children: [

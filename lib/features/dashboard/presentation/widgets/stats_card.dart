@@ -9,6 +9,7 @@ class StatsCard extends StatefulWidget {
   final IconData? icon;
   final Color accentColor;
   final bool isMain;
+  final VoidCallback? onTap;
 
   const StatsCard({
     super.key,
@@ -19,6 +20,7 @@ class StatsCard extends StatefulWidget {
     this.icon,
     this.accentColor = const Color(0xFFFFCC00),
     this.isMain = false,
+    this.onTap,
   });
 
   @override
@@ -28,7 +30,15 @@ class StatsCard extends StatefulWidget {
 class _StatsCardState extends State<StatsCard> {
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return InkWell(
+      onTap: widget.onTap,
+      borderRadius: const BorderRadius.only(
+        topLeft: Radius.circular(2),
+        topRight: Radius.circular(20),
+        bottomLeft: Radius.circular(2),
+        bottomRight: Radius.circular(20),
+      ),
+      child: Container(
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: const BorderRadius.only(
@@ -115,6 +125,7 @@ class _StatsCardState extends State<StatsCard> {
             ),
           ),
         ],
+      ),
       ),
     );
   }

@@ -1,10 +1,11 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import '../../../../core/constants/app_config.dart';
 import '../../domain/entities/auth_response.dart';
 
 class AuthService {
-  final String _baseUrl = "http://localhost:4000/api";
+  final String _baseUrl = AppConfig.apiBaseUrl;
   final _storage = const FlutterSecureStorage();
 
   Future<AuthResponse?> login(String email, String password) async {
@@ -26,11 +27,11 @@ class AuthService {
         await _storage.write(key: 'jwt_token', value: authResponse.data.token);
         
         return authResponse;
-      } else {
-        throw Exception('Credenciales incorrectas');
       }
-    } catch (e) {
-      throw Exception('Error de conexión: $e');
+
+      throw Exception('Credenciales incorrectas');
+    } on http.ClientException {
+      throw Exception('No se pudo conectar con el servidor');
     }
   }
 

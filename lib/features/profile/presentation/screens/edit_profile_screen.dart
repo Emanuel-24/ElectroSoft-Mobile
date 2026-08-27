@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';
-import 'dart:typed_data';
+import 'package:flutter/services.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../users/domain/entities/user.dart';
 import '../../domain/entities/document_type.dart';
@@ -11,7 +10,8 @@ import '../widgets/profile_dropdown_field.dart';
 
 class EditProfileScreen extends StatefulWidget {
   final Usuario profile;
-  final VoidCallback? onProfileUpdated;
+  final void Function(String avatarLetter, String avatarColor)?
+  onProfileUpdated;
 
   const EditProfileScreen({
     super.key,
@@ -26,8 +26,6 @@ class EditProfileScreen extends StatefulWidget {
 class _EditProfileScreenState extends State<EditProfileScreen> {
   final ProfileService _profileService = ProfileService();
   final _formKey = GlobalKey<FormState>();
-  final ImagePicker _picker = ImagePicker();
-
   late final TextEditingController _documentCtrl;
   late final TextEditingController _nameCtrl;
   late final TextEditingController _emailCtrl;
@@ -37,8 +35,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   List<DocumentTypeEntity> _documentTypes = [];
   bool _isLoadingTypes = true;
   bool _isSaving = false;
-
-  List<int>? _pickedImageBytes;
+  late String _avatarLetter;
+  late String _avatarColor;
 
   @override
   void initState() {
@@ -49,7 +47,10 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     _emailCtrl = TextEditingController(text: p.email);
     _phoneCtrl = TextEditingController(text: p.phone);
     _selectedDocAbbreviation = p.documentAbbreviation;
+    _avatarLetter = p.avatarLetter;
+    _avatarColor = p.avatarColor;
 
+    _cargarPerfilActual();
     _cargarTiposDocumento();
   }
 
@@ -60,58 +61,6 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     _emailCtrl.dispose();
     _phoneCtrl.dispose();
     super.dispose();
-  }
-
-  Future<void> _seleccionarImagen() async {
-    showModalBottomSheet(
-      context: context,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (context) => SafeArea(
-        child: Wrap(
-          children: [
-            ListTile(
-              leading: const Icon(
-                Icons.photo_library_outlined,
-                color: AppTheme.primary,
-              ),
-              title: const Text('Elegir de la galería'),
-              onTap: () => _obtenerImagen(ImageSource.gallery),
-            ),
-            ListTile(
-              leading: const Icon(
-                Icons.camera_alt_outlined,
-                color: AppTheme.primary,
-              ),
-              title: const Text('Tomar foto con la cámara'),
-              onTap: () => _obtenerImagen(ImageSource.camera),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Future<void> _obtenerImagen(ImageSource source) async {
-    Navigator.pop(context);
-    try {
-      final XFile? image = await _picker.pickImage(
-        source: source,
-        maxWidth: 500,
-        maxHeight: 500,
-        imageQuality: 80,
-      );
-
-      if (image != null) {
-        final bytes = await image.readAsBytes();
-        setState(() {
-          _pickedImageBytes = bytes;
-        });
-      }
-    } catch (e) {
-      debugPrint('Error seleccionando imagen: $e');
-    }
   }
 
   Future<void> _cargarTiposDocumento() async {
@@ -134,6 +83,26 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     }
   }
 
+  Future<void> _cargarPerfilActual() async {
+    try {
+      final profile = await _profileService.obtenerPerfilActual(
+        widget.profile.id,
+      );
+      if (!mounted) return;
+      setState(() {
+        _documentCtrl.text = profile.documentNumber;
+        _nameCtrl.text = profile.fullName;
+        _emailCtrl.text = profile.email;
+        _phoneCtrl.text = profile.phone;
+        _selectedDocAbbreviation = profile.documentAbbreviation;
+        _avatarLetter = profile.avatarLetter;
+        _avatarColor = profile.avatarColor;
+      });
+    } catch (e) {
+      debugPrint('Error cargando perfil actualizado: $e');
+    }
+  }
+
   Future<void> _save() async {
     if (!_formKey.currentState!.validate()) return;
 
@@ -147,6 +116,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         phone: _phoneCtrl.text.trim(),
         documentNumber: _documentCtrl.text.trim(),
         documentAbbreviation: _selectedDocAbbreviation,
+        avatarLetter: _avatarLetter,
+        avatarColor: _avatarColor,
       );
 
       if (success && mounted) {
@@ -159,7 +130,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
             ),
           ),
         );
-        widget.onProfileUpdated?.call();
+        widget.onProfileUpdated?.call(_avatarLetter, _avatarColor);
       }
     } catch (e) {
       if (mounted) {
@@ -221,11 +192,12 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
                     Center(
                       child: AvatarPicker(
-                        avatarUrl: '',
-                        pickedBytes: _pickedImageBytes != null
-                            ? Uint8List.fromList(_pickedImageBytes!)
-                            : null,
-                        onTap: _seleccionarImagen,
+                        avatarLetter: _avatarLetter,
+                        avatarColor: _avatarColor,
+                        onLetterChanged: (letter) =>
+                            setState(() => _avatarLetter = letter),
+                        onColorChanged: (color) =>
+                            setState(() => _avatarColor = color),
                       ),
                     ),
                     const SizedBox(height: 20),
@@ -250,8 +222,18 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                       icon: Icons.credit_card_outlined,
                       controller: _documentCtrl,
                       keyboardType: TextInputType.number,
-                      validator: (v) =>
-                          v!.isEmpty ? 'El documento es requerido' : null,
+                      inputFormatters: [
+                        FilteringTextInputFormatter.digitsOnly,
+                        LengthLimitingTextInputFormatter(12),
+                      ],
+                      validator: (v) {
+                        final value = v?.trim() ?? '';
+                        if (value.isEmpty) return 'El documento es requerido';
+                        if (!RegExp(r'^\d{8,12}$').hasMatch(value)) {
+                          return 'Debe tener entre 8 y 12 dígitos';
+                        }
+                        return null;
+                      },
                     ),
                     const SizedBox(height: 16),
 
@@ -259,8 +241,28 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                       label: 'Nombre completo',
                       icon: Icons.person_outline_rounded,
                       controller: _nameCtrl,
-                      validator: (v) =>
-                          v!.isEmpty ? 'El nombre es requerido' : null,
+                      inputFormatters: [
+                        FilteringTextInputFormatter.allow(
+                          RegExp(r'[a-zA-ZáéíóúÁÉÍÓÚüÜñÑ\s]'),
+                        ),
+                        LengthLimitingTextInputFormatter(40),
+                      ],
+                      validator: (v) {
+                        final value = v?.trim() ?? '';
+                        if (value.isEmpty) return 'El nombre es requerido';
+                        if (value.length < 3) return 'Mínimo 3 caracteres';
+                        if (value.length > 40) return 'Máximo 40 caracteres';
+                        if (!RegExp(
+                          r'^[\p{L}\s]+$',
+                          unicode: true,
+                        ).hasMatch(value)) {
+                          return 'Solo se permiten letras';
+                        }
+                        if (RegExp(r'\s{2,}').hasMatch(value)) {
+                          return 'No se permiten espacios dobles';
+                        }
+                        return null;
+                      },
                     ),
                     const SizedBox(height: 16),
 
@@ -270,8 +272,13 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                       controller: _emailCtrl,
                       keyboardType: TextInputType.emailAddress,
                       validator: (v) {
-                        if (v!.isEmpty) return 'El correo es requerido';
-                        if (!v.contains('@')) return 'Ingresa un correo válido';
+                        final value = v?.trim() ?? '';
+                        if (value.isEmpty) return 'El correo es requerido';
+                        if (!RegExp(
+                          r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$',
+                        ).hasMatch(value)) {
+                          return 'Ingresa un correo válido';
+                        }
                         return null;
                       },
                     ),
@@ -282,6 +289,18 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                       icon: Icons.phone_outlined,
                       controller: _phoneCtrl,
                       keyboardType: TextInputType.phone,
+                      inputFormatters: [
+                        FilteringTextInputFormatter.digitsOnly,
+                        LengthLimitingTextInputFormatter(14),
+                      ],
+                      validator: (v) {
+                        final value = v?.trim() ?? '';
+                        if (value.isEmpty) return 'El teléfono es requerido';
+                        if (!RegExp(r'^\d{8,14}$').hasMatch(value)) {
+                          return 'Debe tener entre 8 y 14 dígitos';
+                        }
+                        return null;
+                      },
                     ),
                     const SizedBox(height: 16),
 

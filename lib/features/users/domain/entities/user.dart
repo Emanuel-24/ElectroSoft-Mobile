@@ -8,6 +8,9 @@ class Usuario {
   final String documentAbbreviation;
   final bool isActive;
   final String lastAccess;
+  final String avatar;
+  final String avatarLetter;
+  final String avatarColor;
 
   const Usuario({
     required this.id,
@@ -19,6 +22,9 @@ class Usuario {
     required this.documentAbbreviation,
     required this.isActive,
     required this.lastAccess,
+    this.avatar = '',
+    this.avatarLetter = 'A',
+    this.avatarColor = '#273bf1',
   });
 
   factory Usuario.fromJson(Map<String, dynamic> json) {
@@ -41,6 +47,9 @@ class Usuario {
       documentAbbreviation: docTypeObj['abbreviation'] ?? 'CC',
       isActive: json['isActive'] ?? false,
       lastAccess: formattedDate,
+      avatar: json['avatar'] ?? '',
+      avatarLetter: json['avatarLetter'] ?? 'A',
+      avatarColor: json['avatarColor'] ?? '#273bf1',
     );
   }
 }

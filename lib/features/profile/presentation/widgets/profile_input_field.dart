@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../../../../core/theme/app_theme.dart';
 
 class ProfileInputField extends StatelessWidget {
@@ -7,6 +8,7 @@ class ProfileInputField extends StatelessWidget {
   final TextEditingController controller;
   final TextInputType keyboardType;
   final bool readOnly;
+  final List<TextInputFormatter>? inputFormatters;
   final String? Function(String?)? validator;
 
   const ProfileInputField({
@@ -16,6 +18,7 @@ class ProfileInputField extends StatelessWidget {
     required this.controller,
     this.keyboardType = TextInputType.text,
     this.readOnly = false,
+    this.inputFormatters,
     this.validator,
   });
 
@@ -44,6 +47,7 @@ class ProfileInputField extends StatelessWidget {
           controller: controller,
           readOnly: readOnly,
           keyboardType: keyboardType,
+          inputFormatters: inputFormatters,
           validator: validator,
           style: TextStyle(
             fontSize: 15,

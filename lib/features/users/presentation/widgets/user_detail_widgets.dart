@@ -1,37 +1,26 @@
 import 'package:flutter/material.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../../../shared/widgets/electro_avatar.dart';
 
 class BigAvatar extends StatelessWidget {
-  final String fullName;
-  const BigAvatar({super.key, required this.fullName});
+  final String? avatarUrl;
+  final String avatarLetter;
+  final String avatarColor;
 
-  String get _iniciales {
-    final p = fullName.trim().split(' ');
-    return p.length >= 2
-        ? '${p[0][0]}${p[1][0]}'.toUpperCase()
-        : p[0][0].toUpperCase();
-  }
+  const BigAvatar({
+    super.key,
+    this.avatarUrl,
+    this.avatarLetter = 'A',
+    this.avatarColor = '#273bf1',
+  });
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(4),
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        border: Border.all(color: AppTheme.primary, width: 2),
-      ),
-      child: CircleAvatar(
-        radius: 50,
-        backgroundColor: AppTheme.avatarBg2,
-        child: Text(
-          _iniciales,
-          style: const TextStyle(
-            fontSize: 32,
-            fontWeight: FontWeight.w900,
-            color: Colors.white,
-          ),
-        ),
-      ),
+    return ElectroAvatar(
+      avatarUrl: avatarUrl,
+      avatarLetter: avatarLetter,
+      avatarColor: avatarColor,
+      radius: 50,
     );
   }
 }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../domain/entities/user.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../../../shared/widgets/electro_avatar.dart';
 
 class UsuarioCard extends StatelessWidget {
   final Usuario usuario;
@@ -44,7 +45,12 @@ class UsuarioCard extends StatelessWidget {
                       children: [
                         Row(
                           children: [
-                            _Avatar(fullName: usuario.fullName),
+                            ElectroAvatar(
+                              avatarUrl: usuario.avatar,
+                              avatarLetter: usuario.avatarLetter,
+                              avatarColor: usuario.avatarColor,
+                              radius: 24,
+                            ),
                             const SizedBox(width: 12),
                             Expanded(
                               child: Column(
@@ -100,34 +106,6 @@ class UsuarioCard extends StatelessWidget {
               ],
             ),
           ),
-        ),
-      ),
-    );
-  }
-}
-
-class _Avatar extends StatelessWidget {
-  final String fullName;
-  const _Avatar({required this.fullName});
-
-  String get _iniciales {
-    final p = fullName.trim().split(' ');
-    return p.length >= 2
-        ? '${p[0][0]}${p[1][0]}'.toUpperCase()
-        : p[0][0].toUpperCase();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return CircleAvatar(
-      radius: 24,
-      backgroundColor: AppTheme.avatarBg2,
-      child: Text(
-        _iniciales,
-        style: const TextStyle(
-          color: Colors.white,
-          fontWeight: FontWeight.bold,
-          fontSize: 16,
         ),
       ),
     );

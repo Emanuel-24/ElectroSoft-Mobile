@@ -7,4 +7,5 @@
 //
 // ─────────────────────────────────────────────────────────────────────────────
 export 'electro_app_bar.dart';
+export 'electro_avatar.dart';
 export 'electro_bottom_nav.dart';

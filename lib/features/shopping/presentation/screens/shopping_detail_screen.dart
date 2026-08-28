@@ -312,20 +312,10 @@ class DetalleCompraScreen extends StatelessWidget {
                 ),
               ),
             ),
-            const SizedBox(height: 90),
+            const SizedBox(height: 24),
           ],
         ),
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => Navigator.pop(context),
-        icon: const Icon(Icons.arrow_back, size: 20),
-        label: const Text('Volver'),
-        backgroundColor: Colors.white,
-        foregroundColor: AppTheme.primary,
-        elevation: 4,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
-      ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
     );
   }
 

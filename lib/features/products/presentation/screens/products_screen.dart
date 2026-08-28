@@ -202,7 +202,10 @@ class _ProductosAppBar extends StatelessWidget {
               IconButton(
                 icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 18),
                 color: AppTheme.textDark,
-                onPressed: () => Navigator.pop(context),
+                onPressed: () {
+                  FocusManager.instance.primaryFocus?.unfocus();
+                  Navigator.pop(context);
+                },
               ),
               Expanded(
                 child: Text(
@@ -228,6 +231,7 @@ class _ProductosAppBar extends StatelessWidget {
             child: TextField(
               controller: controller,
               onChanged: onChanged,
+              textAlignVertical: TextAlignVertical.center,
               style: const TextStyle(fontSize: 14, color: AppTheme.textDark),
               decoration: InputDecoration(
                 hintText: 'Buscar por nombre',
@@ -237,6 +241,12 @@ class _ProductosAppBar extends StatelessWidget {
                   color: AppTheme.primary,
                   size: 20,
                 ),
+                prefixIconConstraints: const BoxConstraints(
+                  minWidth: 44,
+                  maxWidth: 44,
+                  minHeight: 44,
+                  maxHeight: 44,
+                ),
                 suffixIcon: showClear
                     ? IconButton(
                         icon: const Icon(Icons.close_rounded, size: 18),
@@ -244,7 +254,7 @@ class _ProductosAppBar extends StatelessWidget {
                       )
                     : null,
                 border: InputBorder.none,
-                contentPadding: const EdgeInsets.symmetric(vertical: 11),
+                contentPadding: EdgeInsets.zero,
                 isDense: true,
               ),
             ),

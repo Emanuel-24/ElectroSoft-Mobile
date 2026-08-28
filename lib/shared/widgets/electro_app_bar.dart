@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../../core/theme/app_theme.dart';
 import '../../features/auth/data/services/auth_service.dart';
 import '../../features/auth/presentation/screens/login_screen.dart';
-import '../../features/profile/domain/avatar_options.dart';
+import 'electro_avatar.dart';
 
 class ElectroAppBar extends StatelessWidget implements PreferredSizeWidget {
   final String title;
@@ -188,8 +188,6 @@ class _Avatar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final bool hasImage = url != null && url!.trim().isNotEmpty;
-
     return PopupMenuButton<String>(
       position: PopupMenuPosition.under,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -203,22 +201,10 @@ class _Avatar extends StatelessWidget {
           onAvatarTap?.call();
         }
       },
-      child: CircleAvatar(
-        radius: 20,
-        backgroundColor: avatarColorFromHex(color),
-        backgroundImage: hasImage ? NetworkImage(url!.trim()) : null,
-        child: !hasImage
-            ? Text(
-                letter.trim().isEmpty
-                    ? 'A'
-                    : letter.trim().substring(0, 1).toUpperCase(),
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 18,
-                ),
-              )
-            : null,
+      child: ElectroAvatar(
+        avatarUrl: url,
+        avatarLetter: letter,
+        avatarColor: color,
       ),
       itemBuilder: (context) => [
         if (onAvatarTap != null)

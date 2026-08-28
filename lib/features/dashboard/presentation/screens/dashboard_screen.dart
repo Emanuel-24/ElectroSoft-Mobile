@@ -71,6 +71,7 @@ class _DashboardScreenState extends State<DashboardScreen>
     _calcularStockCritico();
     _cargarPedidosPendientes();
     _cargarVentas();
+    _cargarNotificaciones();
     _notificationServiceAPI.startPolling((notifications, initial) async {
       if (mounted) {
         setState(() {

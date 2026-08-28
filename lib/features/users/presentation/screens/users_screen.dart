@@ -74,15 +74,18 @@ class _UsuariosScreenState extends State<UsuariosScreen> {
 
             return UsuarioCard(
               usuario: usuario,
-              onTap: () => Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => UsuarioDetalleScreen(
-                    usuario: usuario,
-                    usuarioLogueado: widget.usuario,
+              onTap: () {
+                FocusManager.instance.primaryFocus?.unfocus();
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => UsuarioDetalleScreen(
+                      usuario: usuario,
+                      usuarioLogueado: widget.usuario,
+                    ),
                   ),
-                ),
-              ),
+                );
+              },
             );
           },
         );

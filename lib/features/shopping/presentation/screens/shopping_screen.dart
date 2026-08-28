@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../auth/domain/entities/auth_response.dart';
 import '../../data/services/shopping_service.dart';
@@ -37,12 +38,26 @@ class _ComprasScreenState extends State<ComprasScreen> {
 
   List<Shopping> _filtrarCompras(List<Shopping> lista) {
     if (widget.searchQuery.trim().isEmpty) return lista;
-    final q = widget.searchQuery.toLowerCase();
+    final q = widget.searchQuery.trim().toLowerCase();
+    final qSinSeparadores = q.replaceAll(RegExp(r'[^0-9]'), '');
+    final currencyFormat = NumberFormat.currency(
+      locale: 'es_CO',
+      symbol: '\$',
+      decimalDigits: 0,
+    );
     
     return lista.where((c) {
       final matchesInvoice = c.invoiceNumber.toLowerCase().contains(q);
       final matchesProvider = c.providerName?.toLowerCase().contains(q) ?? false;
-      return matchesInvoice || matchesProvider;
+      final fecha = c.purchaseDate != null && c.purchaseDate!.isNotEmpty
+          ? c.purchaseDate!
+          : DateFormat('dd/MM/yyyy').format(c.createdAt);
+      final matchesDate = fecha.toLowerCase().contains(q);
+      final totalFormateado = currencyFormat.format(c.total).toLowerCase();
+      final totalNumerico = c.total.round().toString();
+      final matchesTotal = totalFormateado.contains(q) ||
+          (qSinSeparadores.isNotEmpty && totalNumerico.contains(qSinSeparadores));
+      return matchesInvoice || matchesProvider || matchesDate || matchesTotal;
     }).toList();
   }
 

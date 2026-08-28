@@ -43,6 +43,7 @@ class CompraCard extends StatelessWidget {
 
     return GestureDetector(
       onTap: () {
+        FocusManager.instance.primaryFocus?.unfocus();
         Navigator.push(
           context,
           MaterialPageRoute(

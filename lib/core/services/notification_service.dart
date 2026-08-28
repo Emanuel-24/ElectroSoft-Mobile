@@ -54,10 +54,8 @@ class NotificationServiceAPI {
     _requestInProgress = true;
     try {
       final notifications = await _fetchNotifications(incremental: !initial);
-      if (notifications.isNotEmpty) {
-        await onNotifications(notifications, initial);
-        if (playSound) await _playBatchSound();
-      }
+      await onNotifications(notifications, initial);
+      if (playSound && notifications.isNotEmpty) await _playBatchSound();
     } catch (e) {
       debugPrint('Error consultando notificaciones: $e');
     } finally {
@@ -73,7 +71,9 @@ class NotificationServiceAPI {
     }
 
     final uri = Uri.parse(_baseUrl).replace(queryParameters: query);
-    final response = await http.get(uri, headers: await _headers());
+    final response = await http
+      .get(uri, headers: await _headers())
+      .timeout(const Duration(seconds: 10));
     if (response.statusCode != 200) throw Exception('Error cargando notificaciones (${response.statusCode})');
 
     final decoded = jsonDecode(response.body);
@@ -116,7 +116,9 @@ class NotificationServiceAPI {
 
   Future<List<dynamic>> getRecentNotifications() async {
     try {
-      final response = await http.get(Uri.parse('$_baseUrl?limit=20'), headers: await _headers());
+        final response = await http
+          .get(Uri.parse('$_baseUrl?limit=20'), headers: await _headers())
+          .timeout(const Duration(seconds: 10));
 
       if (response.statusCode == 200) {
         final decoded = json.decode(response.body);

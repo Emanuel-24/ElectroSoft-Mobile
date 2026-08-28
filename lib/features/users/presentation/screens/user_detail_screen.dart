@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
-import '../../../../shared/widgets/widgets.dart';
 import '../../domain/entities/user.dart';
 import '../widgets/user_detail_widgets.dart';
-import '../../../../shared/widgets/main_shell.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../auth/domain/entities/auth_response.dart';
 
@@ -20,10 +18,12 @@ class UsuarioDetalleScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF5F7F9),
-      appBar: const ElectroAppBar(
-        title: 'Detalle de Usuario',
-        showSearch: false,
-        showBack: true,
+      appBar: AppBar(
+        title: const Text('Detalle de Usuario'),
+        backgroundColor: AppTheme.primary,
+        foregroundColor: Colors.white,
+        elevation: 0,
+        centerTitle: true,
       ),
       body: SingleChildScrollView(
         child: Column(
@@ -32,7 +32,7 @@ class UsuarioDetalleScreen extends StatelessWidget {
               width: double.infinity,
               padding: const EdgeInsets.symmetric(vertical: 30),
               decoration: const BoxDecoration(
-                color: Colors.white,
+                color: AppTheme.primary,
                 borderRadius: BorderRadius.only(
                   bottomLeft: Radius.circular(30),
                   bottomRight: Radius.circular(30),
@@ -40,14 +40,18 @@ class UsuarioDetalleScreen extends StatelessWidget {
               ),
               child: Column(
                 children: [
-                  BigAvatar(fullName: usuario.fullName),
+                  BigAvatar(
+                    avatarUrl: usuario.avatar,
+                    avatarLetter: usuario.avatarLetter,
+                    avatarColor: usuario.avatarColor,
+                  ),
                   const SizedBox(height: 16),
                   Text(
                     usuario.fullName,
                     style: const TextStyle(
                       fontSize: 24,
                       fontWeight: FontWeight.bold,
-                      color: Color(0xFF1A1A1A),
+                      color: Colors.white,
                     ),
                   ),
                   const SizedBox(height: 4),
@@ -112,19 +116,6 @@ class UsuarioDetalleScreen extends StatelessWidget {
             ),
           ],
         ),
-      ),
-      bottomNavigationBar: ElectroBottomNav(
-        items: ElectroNavItem.defaults(),
-        initialIndex: 1,
-        onTabChanged: (index) {
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(
-              builder: (_) =>
-                  MainShell(initialIndex: index, usuario: usuarioLogueado),
-            ),
-          );
-        },
       ),
     );
   }

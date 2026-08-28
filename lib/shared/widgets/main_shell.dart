@@ -65,10 +65,13 @@ class _MainShellState extends State<MainShell> {
       bottomNavigationBar: ElectroBottomNav(
         items: ElectroNavItem.defaults(),
         initialIndex: _currentIndex,
-        onTabChanged: (index) => setState(() {
-          _currentIndex = index;
-          _searchQuery = '';
-        }),
+        onTabChanged: (index) {
+          FocusManager.instance.primaryFocus?.unfocus();
+          setState(() {
+            _currentIndex = index;
+            _searchQuery = '';
+          });
+        },
       ),
     );
   }

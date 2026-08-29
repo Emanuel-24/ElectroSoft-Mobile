@@ -7,7 +7,7 @@ environment:
   sdk: ^3.10.8
 
 dependencies:
-  audioplayers: ^6.8.0
+  audioplayers: ^6.7.1
   fl_chart: ^1.2.0
   flutter:
     sdk: flutter

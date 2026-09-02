@@ -2,11 +2,13 @@ import 'package:electrosoft/features/dashboard/presentation/screens/dashboard_sc
 import 'package:flutter/material.dart';
 
 import '../../features/auth/domain/entities/auth_response.dart';
+import '../../core/constants/app_config.dart';
 import '../../features/products/presentation/screens/cat_products_screen.dart';
 import '../../features/shopping/presentation/screens/shopping_screen.dart';
+import '../../features/sales/presentation/screens/sales_screen.dart';
+import '../../features/clients/presentation/screens/clients_screen.dart';
+import '../../features/profile/data/services/profile_service.dart';
 import '../../features/profile/presentation/screens/edit_profile_screen.dart';
-import '../../features/users/presentation/screens/users_screen.dart';
-import '../../features/users/domain/entities/user.dart';
 import '../widgets/widgets.dart';
 
 class MainShell extends StatefulWidget {
@@ -24,6 +26,7 @@ class _MainShellState extends State<MainShell> {
   String _searchQuery = '';
   late String _avatarLetter;
   late String _avatarColor;
+  final ProfileService _profileService = ProfileService();
 
   @override
   void initState() {
@@ -35,13 +38,13 @@ class _MainShellState extends State<MainShell> {
 
   static const List<_PageConfig> _pages = [
     _PageConfig(title: '', showSearch: false),
-    _PageConfig(title: 'Usuarios', searchHint: 'Buscar usuario...'),
+    _PageConfig(title: 'Ventas', searchHint: 'Buscar venta...'),
     _PageConfig(title: 'Compras', searchHint: 'Buscar compra...'),
     _PageConfig(
       title: 'Categorías de productos',
       searchHint: 'Buscar categoría...',
     ),
-    _PageConfig(title: '', showSearch: false),
+    _PageConfig(title: 'Clientes', searchHint: 'Buscar cliente...'),
   ];
 
   @override
@@ -57,8 +60,32 @@ class _MainShellState extends State<MainShell> {
         avatarUrl: widget.usuario.avatar,
         avatarLetter: _avatarLetter,
         avatarColor: _avatarColor,
-        onAvatarTap: () {
-          setState(() => _currentIndex = 4);
+        canEditProfile: !AppConfig.isGlobalAdmin(widget.usuario.email),
+        onAvatarTap: () async {
+          try {
+            final profile = await _profileService.obtenerPerfilActual(
+              widget.usuario.id,
+            );
+            if (!context.mounted) return;
+            await Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (_) => EditProfileScreen(
+                  profile: profile,
+                  onProfileUpdated: (letter, color) {
+                    setState(() {
+                      _avatarLetter = letter;
+                      _avatarColor = color;
+                    });
+                  },
+                ),
+              ),
+            );
+          } catch (e) {
+            if (!context.mounted) return;
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('No se pudo abrir el perfil: $e')),
+            );
+          }
         },
       ),
       body: _buildCurrentPage(),
@@ -81,7 +108,7 @@ class _MainShellState extends State<MainShell> {
       case 0:
         return DashboardScreen();
       case 1:
-        return UsuariosScreen(
+        return VentasScreen(
           searchQuery: _searchQuery,
           usuario: widget.usuario,
         );
@@ -96,27 +123,9 @@ class _MainShellState extends State<MainShell> {
           usuario: widget.usuario,
         );
       case 4:
-        return EditProfileScreen(
-          profile: Usuario(
-            id: widget.usuario.id,
-            fullName: widget.usuario.fullName,
-            email: widget.usuario.email,
-            phone: widget.usuario.phone,
-            documentNumber: widget.usuario.documentNumber,
-            documentAbbreviation: 'CC',
-            roleName: widget.usuario.role,
-            isActive: widget.usuario.isActive,
-            lastAccess: DateTime.now().toIso8601String(),
-            avatar: widget.usuario.avatar,
-            avatarLetter: widget.usuario.avatarLetter,
-            avatarColor: widget.usuario.avatarColor,
-          ),
-          onProfileUpdated: (avatarLetter, avatarColor) {
-            setState(() {
-              _avatarLetter = avatarLetter;
-              _avatarColor = avatarColor;
-            });
-          },
+        return ClientesScreen(
+          searchQuery: _searchQuery,
+          usuario: widget.usuario,
         );
       default:
         return const SizedBox();

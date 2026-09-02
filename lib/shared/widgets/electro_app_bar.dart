@@ -11,6 +11,7 @@ class ElectroAppBar extends StatelessWidget implements PreferredSizeWidget {
   final String searchHint;
   final ValueChanged<String>? onSearch;
   final VoidCallback? onAvatarTap;
+  final bool canEditProfile;
   final String? avatarUrl;
   final String avatarLetter;
   final String avatarColor;
@@ -23,6 +24,7 @@ class ElectroAppBar extends StatelessWidget implements PreferredSizeWidget {
     this.searchHint = 'Buscar...',
     this.onSearch,
     this.onAvatarTap,
+    this.canEditProfile = true,
     this.avatarUrl,
     this.avatarLetter = 'A',
     this.avatarColor = '#273bf1',
@@ -51,6 +53,7 @@ class ElectroAppBar extends StatelessWidget implements PreferredSizeWidget {
                 url: avatarUrl,
                 letter: avatarLetter,
                 color: avatarColor,
+                canEditProfile: canEditProfile,
                 onAvatarTap: onAvatarTap,
               ),
             ],
@@ -131,12 +134,14 @@ class _Avatar extends StatelessWidget {
   final String? url;
   final String letter;
   final String color;
+  final bool canEditProfile;
   final VoidCallback? onAvatarTap;
 
   const _Avatar({
     this.url,
     required this.letter,
     required this.color,
+    this.canEditProfile = true,
     this.onAvatarTap,
   });
 
@@ -208,14 +213,24 @@ class _Avatar extends StatelessWidget {
       ),
       itemBuilder: (context) => [
         if (onAvatarTap != null)
-          const PopupMenuItem<String>(
+          PopupMenuItem<String>(
             value: 'profile',
+            enabled: canEditProfile,
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(Icons.edit_outlined, color: AppTheme.primary, size: 20),
-                SizedBox(width: 12),
-                Text('Editar perfil'),
+                Icon(
+                  Icons.edit_outlined,
+                  color: canEditProfile ? AppTheme.primary : Colors.grey,
+                  size: 20,
+                ),
+                const SizedBox(width: 12),
+                Text(
+                  'Editar perfil',
+                  style: TextStyle(
+                    color: canEditProfile ? null : Colors.grey,
+                  ),
+                ),
               ],
             ),
           ),

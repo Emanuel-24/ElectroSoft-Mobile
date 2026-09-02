@@ -115,9 +115,9 @@ class ElectroNavItem {
       icon: Icons.grid_view_rounded,
     ),
     ElectroNavItem(
-      label: 'Usuarios',
-      icon: Icons.people_outline_rounded,
-      activeIcon: Icons.people_rounded,
+      label: 'Ventas',
+      icon: Icons.receipt_long_outlined,
+      activeIcon: Icons.receipt_long_rounded,
     ),
     ElectroNavItem(
       label: 'Compras',
@@ -130,9 +130,9 @@ class ElectroNavItem {
       activeIcon: Icons.sell_rounded,
     ),
     ElectroNavItem(
-      label: 'Perfil',
-      icon: Icons.account_circle_outlined,
-      activeIcon: Icons.account_circle_rounded,
+      label: 'Clientes',
+      icon: Icons.people_outline_rounded,
+      activeIcon: Icons.people_rounded,
     ),
   ];
 }

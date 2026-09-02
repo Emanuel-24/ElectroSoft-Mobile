@@ -25,9 +25,9 @@ class BigAvatar extends StatelessWidget {
   }
 }
 
-class RoleChip extends StatelessWidget {
-  final String roleName;
-  const RoleChip({super.key, required this.roleName});
+class ClientTypeChip extends StatelessWidget {
+  final String typeName;
+  const ClientTypeChip({super.key, required this.typeName});
 
   @override
   Widget build(BuildContext context) {
@@ -38,7 +38,7 @@ class RoleChip extends StatelessWidget {
         borderRadius: BorderRadius.circular(20),
       ),
       child: Text(
-        roleName.toUpperCase(),
+        typeName.toUpperCase(),
         style: const TextStyle(
           color: AppTheme.primary,
           fontWeight: FontWeight.bold,

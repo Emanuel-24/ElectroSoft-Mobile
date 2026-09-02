@@ -115,7 +115,16 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         email: _emailCtrl.text.trim(),
         phone: _phoneCtrl.text.trim(),
         documentNumber: _documentCtrl.text.trim(),
-        documentAbbreviation: _selectedDocAbbreviation,
+        documentType: _documentTypes
+            .firstWhere(
+              (type) => type.abbreviation == _selectedDocAbbreviation,
+              orElse: () => DocumentTypeEntity(
+                id: widget.profile.documentTypeId,
+                name: '',
+                abbreviation: _selectedDocAbbreviation,
+              ),
+            )
+            .id,
         avatarLetter: _avatarLetter,
         avatarColor: _avatarColor,
       );
@@ -131,6 +140,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           ),
         );
         widget.onProfileUpdated?.call(_avatarLetter, _avatarColor);
+        if (mounted) Navigator.of(context).pop();
       }
     } catch (e) {
       if (mounted) {
@@ -161,27 +171,43 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    RichText(
-                      text: const TextSpan(
-                        children: [
-                          TextSpan(
-                            text: 'Editar ',
-                            style: TextStyle(
-                              fontSize: 26,
-                              fontWeight: FontWeight.w800,
-                              color: AppTheme.textDark,
+                    Row(
+                      children: [
+                        IconButton(
+                          onPressed: () => Navigator.pop(context),
+                          icon: const Icon(
+                            Icons.arrow_back_ios_new_rounded,
+                            size: 20,
+                          ),
+                          padding: EdgeInsets.zero,
+                          constraints: const BoxConstraints(),
+                        ),
+                        const SizedBox(width: 14),
+                        Expanded(
+                          child: RichText(
+                            text: const TextSpan(
+                              children: [
+                                TextSpan(
+                                  text: 'Editar ',
+                                  style: TextStyle(
+                                    fontSize: 26,
+                                    fontWeight: FontWeight.w800,
+                                    color: AppTheme.textDark,
+                                  ),
+                                ),
+                                TextSpan(
+                                  text: 'perfil',
+                                  style: TextStyle(
+                                    fontSize: 26,
+                                    fontWeight: FontWeight.w800,
+                                    color: AppTheme.primary,
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
-                          TextSpan(
-                            text: 'perfil',
-                            style: TextStyle(
-                              fontSize: 26,
-                              fontWeight: FontWeight.w800,
-                              color: AppTheme.primary,
-                            ),
-                          ),
-                        ],
-                      ),
+                        ),
+                      ],
                     ),
                     const SizedBox(height: 6),
                     const Text(
@@ -192,6 +218,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
                     Center(
                       child: AvatarPicker(
+                        avatarUrl: widget.profile.avatar,
                         avatarLetter: _avatarLetter,
                         avatarColor: _avatarColor,
                         onLetterChanged: (letter) =>

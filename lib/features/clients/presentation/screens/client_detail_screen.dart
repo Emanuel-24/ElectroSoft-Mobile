@@ -1,25 +1,35 @@
 import 'package:flutter/material.dart';
-import '../../domain/entities/user.dart';
-import '../widgets/user_detail_widgets.dart';
+import '../../domain/entities/client.dart';
+import '../widgets/client_detail_widgets.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../auth/domain/entities/auth_response.dart';
+import 'package:intl/intl.dart';
 
-class UsuarioDetalleScreen extends StatelessWidget {
-  final Usuario usuario;
+class ClienteDetalleScreen extends StatelessWidget {
+  final Cliente cliente;
   final UserSession usuarioLogueado;
 
-  const UsuarioDetalleScreen({
+  const ClienteDetalleScreen({
     super.key,
-    required this.usuario,
+    required this.cliente,
     required this.usuarioLogueado,
   });
+
+  String _formatearPrecio(double precio) {
+    final formatCurrency = NumberFormat.currency(
+      locale: 'es_CO',
+      symbol: '\$',
+      decimalDigits: 0,
+    );
+    return formatCurrency.format(precio);
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF5F7F9),
       appBar: AppBar(
-        title: const Text('Detalle de Usuario'),
+        title: const Text('Detalle de Cliente'),
         backgroundColor: AppTheme.primary,
         foregroundColor: Colors.white,
         elevation: 0,
@@ -41,13 +51,13 @@ class UsuarioDetalleScreen extends StatelessWidget {
               child: Column(
                 children: [
                   BigAvatar(
-                    avatarUrl: usuario.avatar,
-                    avatarLetter: usuario.avatarLetter,
-                    avatarColor: usuario.avatarColor,
+                    avatarUrl: '',
+                    avatarLetter: cliente.avatarLetter,
+                    avatarColor: cliente.avatarColor,
                   ),
                   const SizedBox(height: 16),
                   Text(
-                    usuario.fullName,
+                    cliente.fullName,
                     style: const TextStyle(
                       fontSize: 24,
                       fontWeight: FontWeight.bold,
@@ -55,7 +65,7 @@ class UsuarioDetalleScreen extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 4),
-                  RoleChip(roleName: usuario.roleName),
+                  ClientTypeChip(typeName: cliente.documentType),
                 ],
               ),
             ),
@@ -75,39 +85,28 @@ class UsuarioDetalleScreen extends StatelessWidget {
                     items: [
                       InfoItem(
                         icon: Icons.badge_outlined,
-                        label: 'Rol del sistema',
-                        value: usuario.roleName,
+                        label: 'Tipo de documento',
+                        value: cliente.documentType,
                       ),
                       InfoItem(
                         icon: Icons.credit_card_rounded,
-                        label: 'Identificación',
-                        value:
-                            '${usuario.documentAbbreviation} - ${usuario.documentNumber}',
+                        label: 'Número de identificación',
+                        value: cliente.documentNumber,
                       ),
                       InfoItem(
                         icon: Icons.email_outlined,
                         label: 'Correo electrónico',
-                        value: usuario.email,
+                        value: cliente.email,
                       ),
                       InfoItem(
                         icon: Icons.phone_android_outlined,
                         label: 'Número de teléfono',
-                        value: usuario.phone.isEmpty
-                            ? 'No registrado'
-                            : usuario.phone,
+                        value: cliente.phone.isEmpty ? 'No registrado' : cliente.phone,
                       ),
                       InfoItem(
-                        icon: Icons.history_rounded,
-                        label: 'Último acceso registrado',
-                        value: usuario.lastAccess,
-                      ),
-                      InfoItem(
-                        icon: Icons.circle,
-                        iconColor: usuario.isActive
-                            ? AppTheme.verde
-                            : AppTheme.gris,
-                        label: 'Estado de la cuenta',
-                        value: usuario.isActive ? 'Activo' : 'Inactivo',
+                        icon: Icons.credit_card,
+                        label: 'Cupo asignado',
+                        value: _formatearPrecio(cliente.cupoTotal),
                       ),
                     ],
                   ),

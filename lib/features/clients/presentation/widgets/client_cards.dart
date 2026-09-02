@@ -1,16 +1,12 @@
 import 'package:flutter/material.dart';
-import '../../domain/entities/user.dart';
+import '../../domain/entities/client.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../shared/widgets/electro_avatar.dart';
 
-class UsuarioCard extends StatelessWidget {
-  final Usuario usuario;
+class ClienteCard extends StatelessWidget {
+  final Cliente cliente;
   final VoidCallback onTap;
-  const UsuarioCard({super.key, required this.usuario, required this.onTap});
-
-  Color get _rolColor => usuario.roleName.toLowerCase().contains('admin')
-      ? AppTheme.amarillo
-      : AppTheme.gris;
+  const ClienteCard({super.key, required this.cliente, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -46,9 +42,9 @@ class UsuarioCard extends StatelessWidget {
                         Row(
                           children: [
                             ElectroAvatar(
-                              avatarUrl: usuario.avatar,
-                              avatarLetter: usuario.avatarLetter,
-                              avatarColor: usuario.avatarColor,
+                              avatarUrl: '',
+                              avatarLetter: cliente.avatarLetter,
+                              avatarColor: cliente.avatarColor,
                               radius: 24,
                             ),
                             const SizedBox(width: 12),
@@ -57,7 +53,7 @@ class UsuarioCard extends StatelessWidget {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
-                                    usuario.fullName,
+                                    cliente.fullName,
                                     style: const TextStyle(
                                       fontWeight: FontWeight.w600,
                                       fontSize: 15,
@@ -66,24 +62,23 @@ class UsuarioCard extends StatelessWidget {
                                   ),
                                   const SizedBox(height: 2),
                                   Text(
-                                    usuario.roleName,
-                                    style: TextStyle(
+                                    '${cliente.documentAbbreviation} - ${cliente.documentNumber}',
+                                    style: const TextStyle(
                                       fontSize: 13,
-                                      color: _rolColor,
+                                      color: AppTheme.gris,
                                       fontWeight: FontWeight.w500,
                                     ),
                                   ),
                                 ],
                               ),
                             ),
-                            _EstadoBadge(isActive: usuario.isActive),
                           ],
                         ),
                         const SizedBox(height: 8),
                         const Divider(height: 1, color: Color(0xFFEEEEEE)),
                         const SizedBox(height: 8),
                         Text(
-                          'Último acceso',
+                          'Correo electrónico',
                           style: TextStyle(
                             fontSize: 11,
                             color: Colors.grey[500],
@@ -92,12 +87,13 @@ class UsuarioCard extends StatelessWidget {
                         ),
                         const SizedBox(height: 2),
                         Text(
-                          usuario.lastAccess,
+                          cliente.email,
                           style: const TextStyle(
                             fontSize: 13,
                             fontWeight: FontWeight.w500,
                             color: Colors.black87,
                           ),
+                          overflow: TextOverflow.ellipsis,
                         ),
                       ],
                     ),
@@ -107,44 +103,6 @@ class UsuarioCard extends StatelessWidget {
             ),
           ),
         ),
-      ),
-    );
-  }
-}
-
-class _EstadoBadge extends StatelessWidget {
-  final bool isActive;
-  const _EstadoBadge({required this.isActive});
-
-  @override
-  Widget build(BuildContext context) {
-    final color = isActive ? AppTheme.verde : AppTheme.gris;
-    final texto = isActive ? 'Activo' : 'Inactivo';
-
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      decoration: BoxDecoration(
-        border: Border.all(color: color, width: 1.2),
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Container(
-            width: 7,
-            height: 7,
-            decoration: BoxDecoration(shape: BoxShape.circle, color: color),
-          ),
-          const SizedBox(width: 4),
-          Text(
-            texto,
-            style: TextStyle(
-              fontSize: 11,
-              color: color,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-        ],
       ),
     );
   }

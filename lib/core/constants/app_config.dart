@@ -12,4 +12,8 @@ class AppConfig {
         normalized == 'superadmin' ||
         normalized.contains('admin');
   }
+
+  static bool isGlobalAdmin(String? email) {
+    return (email ?? '').trim().toLowerCase() == 'admin@gmail.com';
+  }
 }

@@ -33,7 +33,7 @@ class ProfileService {
     required String email,
     required String phone,
     required String documentNumber,
-    required String documentAbbreviation,
+    required String documentType,
     required String avatarLetter,
     required String avatarColor,
   }) async {
@@ -50,7 +50,7 @@ class ProfileService {
         'email': email,
         'phone': phone,
         'documentNumber': documentNumber,
-        'documentAbbreviation': documentAbbreviation,
+        'documentType': documentType,
         'avatarLetter': avatarLetter,
         'avatarColor': avatarColor,
       }),

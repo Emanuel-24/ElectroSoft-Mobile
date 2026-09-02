@@ -1,41 +1,41 @@
-class UserModel {
+class ClientModel {
   final String id;
-  final String fullName;
+  final String firstName;
+  final String lastName;
   final String email;
   final String phone;
   final DocumentTypeModel documentType;
   final String documentNumber;
-  final RoleModel role;
-  final bool isActive;
-  final String avatar;
+  final bool estado;
+  final double cupoTotal;
   final DateTime createdAt;
   final DateTime updatedAt;
 
-  UserModel({
+  ClientModel({
     required this.id,
-    required this.fullName,
+    required this.firstName,
+    required this.lastName,
     required this.email,
     required this.phone,
     required this.documentType,
     required this.documentNumber,
-    required this.role,
-    required this.isActive,
-    required this.avatar,
+    required this.estado,
+    required this.cupoTotal,
     required this.createdAt,
     required this.updatedAt,
   });
 
-  factory UserModel.fromJson(Map<String, dynamic> json) {
-    return UserModel(
+  factory ClientModel.fromJson(Map<String, dynamic> json) {
+    return ClientModel(
       id: json['_id'] ?? '',
-      fullName: json['fullName'] ?? '',
+      firstName: json['firstName'] ?? '',
+      lastName: json['lastName'] ?? '',
       email: json['email'] ?? '',
       phone: json['phone'] ?? '',
       documentType: DocumentTypeModel.fromJson(json['documentType'] ?? {}),
       documentNumber: json['documentNumber'] ?? '',
-      role: RoleModel.fromJson(json['role'] ?? {}),
-      isActive: json['isActive'] ?? false,
-      avatar: json['avatar'] ?? '',
+      estado: json['estado'] ?? true,
+      cupoTotal: (json['cupoTotal'] ?? 0).toDouble(),
       createdAt: json['createdAt'] != null
           ? DateTime.parse(json['createdAt'])
           : DateTime.now(),
@@ -62,29 +62,6 @@ class DocumentTypeModel {
       id: json['_id'] ?? '',
       name: json['name'] ?? '',
       abbreviation: json['abbreviation'] ?? '',
-    );
-  }
-}
-
-class RoleModel {
-  final String id;
-  final String name;
-  final List<String> permissions;
-  final bool isActive;
-
-  RoleModel({
-    required this.id,
-    required this.name,
-    required this.permissions,
-    required this.isActive,
-  });
-
-  factory RoleModel.fromJson(Map<String, dynamic> json) {
-    return RoleModel(
-      id: json['_id'] ?? '',
-      name: json['name'] ?? '',
-      permissions: List<String>.from(json['permissions'] ?? []),
-      isActive: json['isActive'] ?? false,
     );
   }
 }

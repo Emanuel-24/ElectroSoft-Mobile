@@ -4,6 +4,7 @@ class Usuario {
   final String email;
   final String phone;
   final String documentNumber;
+  final String documentTypeId;
   final String roleName;
   final String documentAbbreviation;
   final bool isActive;
@@ -18,6 +19,7 @@ class Usuario {
     required this.email,
     required this.phone,
     required this.documentNumber,
+    this.documentTypeId = '',
     required this.roleName,
     required this.documentAbbreviation,
     required this.isActive,
@@ -43,6 +45,7 @@ class Usuario {
       email: json['email'] ?? '',
       phone: json['phone'] ?? '',
       documentNumber: json['documentNumber'] ?? '',
+      documentTypeId: docTypeObj['_id'] ?? '',
       roleName: roleObj['name'] ?? 'No Role',
       documentAbbreviation: docTypeObj['abbreviation'] ?? 'CC',
       isActive: json['isActive'] ?? false,

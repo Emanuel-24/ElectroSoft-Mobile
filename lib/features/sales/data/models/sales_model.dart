@@ -6,6 +6,8 @@ class SaleModel extends Sale {
     required super.numeroFactura,
     required super.clienteId,
     super.clienteName,
+    super.clienteTipoDocumento,
+    super.clienteDocumento,
     required super.productos,
     required super.total,
     required super.estado,
@@ -17,15 +19,28 @@ class SaleModel extends Sale {
   factory SaleModel.fromJson(Map<String, dynamic> json) {
     String clientId = '';
     String? clientName;
+    String? clientDocumentType;
+    String? clientDocument;
 
     if (json['clienteId'] != null) {
       if (json['clienteId'] is Map) {
-        clientId = json['clienteId']['_id'] ?? '';
-        final firstName = json['clienteId']['firstName'] ?? '';
-        final lastName = json['clienteId']['lastName'] ?? '';
+        final client = json['clienteId'] as Map;
+        clientId = client['_id']?.toString() ?? '';
+        final firstName = client['firstName'] ?? '';
+        final lastName = client['lastName'] ?? '';
         clientName = '$firstName $lastName'.trim();
+        clientDocument = client['documentNumber']?.toString();
+
+        final documentType = client['documentType'];
+        if (documentType is Map) {
+          clientDocumentType =
+              (documentType['abbreviation'] ?? documentType['name'])
+                  ?.toString();
+        } else {
+          clientDocumentType = documentType?.toString();
+        }
       } else {
-        clientId = json['clienteId'];
+        clientId = json['clienteId'].toString();
       }
     }
 
@@ -34,6 +49,8 @@ class SaleModel extends Sale {
       numeroFactura: json['numeroFactura'] ?? '',
       clienteId: clientId,
       clienteName: clientName,
+      clienteTipoDocumento: clientDocumentType,
+      clienteDocumento: clientDocument,
       productos: (json['productos'] as List? ?? [])
           .map((e) => SaleProductModel.fromJson(e))
           .toList(),

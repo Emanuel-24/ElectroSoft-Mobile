@@ -3,7 +3,7 @@ class Order {
   final String documentNumber;
   final String clienteNombre;
   final double total;
-  final String status; // "Pendiente" | "Anulado"
+  final String status; // "Por procesar" | "Anulado"
   final DateTime orderDate;
   final DateTime dueDate;
   final DateTime createdAt;
@@ -19,12 +19,13 @@ class Order {
     required this.createdAt,
   });
 
-  bool get isPendiente => status == 'Pendiente';
+  bool get isPorProcesar => status == 'Por procesar';
 
-  // Urgente = pendiente y vence en 3 días o menos
+  // Urgente = por procesar y vence en menos de 24 horas.
   bool get isUrgente {
-    if (!isPendiente) return false;
-    final diff = dueDate.difference(DateTime.now()).inDays;
-    return diff <= 3;
+    if (!isPorProcesar) return false;
+
+    final remaining = dueDate.difference(DateTime.now());
+    return remaining > Duration.zero && remaining < const Duration(hours: 24);
   }
 }

@@ -39,7 +39,8 @@ class DetalleVentaScreen extends StatelessWidget {
   }
 
   Color _obtenerColorEstado(String estado) {
-    final estadoNorm = estado.toUpperCase()
+    final estadoNorm = estado
+        .toUpperCase()
         .replaceAll('Á', 'A')
         .replaceAll('É', 'E')
         .replaceAll('Í', 'I')
@@ -48,7 +49,8 @@ class DetalleVentaScreen extends StatelessWidget {
         .replaceAll('Ñ', 'N');
     if (estadoNorm.contains('ANULADA')) return Colors.red;
     if (estadoNorm.contains('FINALIZADO')) return AppTheme.verde;
-    if (estadoNorm.contains('DEVUELTO') || estadoNorm.contains('DEVOLUCION PARCIAL')) {
+    if (estadoNorm.contains('DEVUELTO') ||
+        estadoNorm.contains('DEVOLUCION PARCIAL')) {
       return Colors.blue;
     }
     return AppTheme.amarillo;
@@ -58,24 +60,20 @@ class DetalleVentaScreen extends StatelessWidget {
     return _formatearFecha(venta.fechaVenta);
   }
 
-  String _formatearCliente(Sale sale) {
-    final nombre = sale.clienteName?.trim();
+  String _formatearDocumento(Sale sale) {
     final tipo = sale.clienteTipoDocumento?.trim();
     final documento = sale.clienteDocumento?.trim();
 
-    if (nombre == null || nombre.isEmpty) {
-      return 'Sin cliente';
+    if (documento == null || documento.isEmpty) {
+      return 'No registrado';
     }
 
-    final infoDocumento = (tipo != null && tipo.isNotEmpty && documento != null && documento.isNotEmpty)
-        ? ' · $tipo: $documento'
-        : '';
-
-    return '$nombre$infoDocumento';
+    return (tipo == null || tipo.isEmpty) ? documento : '$tipo: $documento';
   }
 
   bool get _esVentaDevuelta {
-    final estado = venta.estado.toUpperCase()
+    final estado = venta.estado
+        .toUpperCase()
         .replaceAll('Á', 'A')
         .replaceAll('É', 'E')
         .replaceAll('Í', 'I')
@@ -85,7 +83,9 @@ class DetalleVentaScreen extends StatelessWidget {
     return estado.contains('DEVUELTO') || estado.contains('DEVOLUCION PARCIAL');
   }
 
-  List<SaleDevolutionProduct> _obtenerProductosDevueltos(List<SaleDevolutionModel> devoluciones) {
+  List<SaleDevolutionProduct> _obtenerProductosDevueltos(
+    List<SaleDevolutionModel> devoluciones,
+  ) {
     final productos = <SaleDevolutionProduct>[];
     for (final devolucion in devoluciones) {
       productos.addAll(devolucion.productos);
@@ -136,9 +136,13 @@ class DetalleVentaScreen extends StatelessWidget {
     final Color estadoColor = _obtenerColorEstado(venta.estado);
 
     return FutureBuilder<List<SaleDevolutionModel>>(
-      future: _esVentaDevuelta ? SalesService().obtenerDevolucionesPorVenta(venta.id) : Future.value(const []),
+      future: _esVentaDevuelta
+          ? SalesService().obtenerDevolucionesPorVenta(venta.id)
+          : Future.value(const []),
       builder: (context, snapshot) {
-        final devoluciones = snapshot.hasData ? snapshot.data! : const <SaleDevolutionModel>[];
+        final devoluciones = snapshot.hasData
+            ? snapshot.data!
+            : const <SaleDevolutionModel>[];
         final productosDevueltos = _obtenerProductosDevueltos(devoluciones);
 
         return Scaffold(
@@ -157,7 +161,10 @@ class DetalleVentaScreen extends StatelessWidget {
                 Container(
                   width: double.infinity,
                   color: AppTheme.primary,
-                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 24,
+                    vertical: 20,
+                  ),
                   child: Center(
                     child: Container(
                       padding: const EdgeInsets.symmetric(
@@ -198,7 +205,10 @@ class DetalleVentaScreen extends StatelessWidget {
 
                 if (venta.isAnulada && venta.infoAnulacion != null)
                   Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 8,
+                    ),
                     child: Card(
                       elevation: 2,
                       color: Colors.red.shade50,
@@ -278,13 +288,17 @@ class DetalleVentaScreen extends StatelessWidget {
                           const Divider(height: 1, thickness: 1),
                           _buildInfoRow(
                             label: 'Cliente',
-                            value: _formatearCliente(venta),
+                            value: venta.clienteName?.trim().isNotEmpty == true
+                                ? venta.clienteName!.trim()
+                                : 'Sin cliente',
                           ),
                           const Divider(height: 1, thickness: 1),
                           _buildInfoRow(
-                            label: 'Fecha',
-                            value: _obtenerFecha(),
+                            label: 'Documento cliente',
+                            value: _formatearDocumento(venta),
                           ),
+                          const Divider(height: 1, thickness: 1),
+                          _buildInfoRow(label: 'Fecha', value: _obtenerFecha()),
                           const Divider(height: 1, thickness: 1),
                           _buildInfoRow(
                             label: 'Total',
@@ -332,17 +346,21 @@ class DetalleVentaScreen extends StatelessWidget {
                               final producto = venta.productos[index];
                               final double subtotal =
                                   producto.quantity * producto.precioUnitario;
-                              final productLabel = producto.productName ??
+                              final productLabel =
+                                  producto.productName ??
                                   'Producto ID: ${producto.productoId.length > 8 ? producto.productoId.substring(0, 8) : producto.productoId}';
 
                               return Padding(
-                                padding: const EdgeInsets.symmetric(vertical: 12),
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 12,
+                                ),
                                 child: Row(
                                   children: [
                                     Expanded(
                                       flex: 3,
                                       child: Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
                                         children: [
                                           Text(
                                             productLabel,
@@ -451,12 +469,15 @@ class DetalleVentaScreen extends StatelessWidget {
                                 itemBuilder: (context, index) {
                                   final producto = productosDevueltos[index];
                                   return Padding(
-                                    padding: const EdgeInsets.symmetric(vertical: 12),
+                                    padding: const EdgeInsets.symmetric(
+                                      vertical: 12,
+                                    ),
                                     child: Row(
                                       children: [
                                         Expanded(
                                           child: Column(
-                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
                                             children: [
                                               Text(
                                                 producto.nombre,
@@ -484,7 +505,9 @@ class DetalleVentaScreen extends StatelessWidget {
                                           ),
                                           decoration: BoxDecoration(
                                             color: Colors.orange.shade50,
-                                            borderRadius: BorderRadius.circular(12),
+                                            borderRadius: BorderRadius.circular(
+                                              12,
+                                            ),
                                           ),
                                           child: Text(
                                             'Cant: ${producto.cantidad}',

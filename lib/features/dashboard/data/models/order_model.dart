@@ -22,7 +22,7 @@ class OrderModel extends Order {
           ? '${cliente['firstName'] ?? ''} ${cliente['lastName'] ?? ''}'.trim()
           : 'Cliente',
       total: (json['total'] ?? 0).toDouble(),
-      status: json['status'] ?? 'Pendiente',
+      status: json['status'] ?? 'Por procesar',
       orderDate: DateTime.tryParse(json['orderDate'] ?? '') ?? DateTime.now(),
       dueDate: DateTime.tryParse(json['dueDate'] ?? '') ?? DateTime.now(),
       createdAt: DateTime.tryParse(json['createdAt'] ?? '') ?? DateTime.now(),

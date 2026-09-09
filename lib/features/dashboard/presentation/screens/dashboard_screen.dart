@@ -29,7 +29,7 @@ class _DashboardScreenState extends State<DashboardScreen>
 
   int _numCriticos = 0;
   List<Product> _productosCriticos = [];
-  int _pedidosPendientes = 0;
+  int _pedidosPorProcesar = 0;
   int _pedidosUrgentes = 0;
   double _ventasTotales = 0;
 
@@ -176,7 +176,7 @@ class _DashboardScreenState extends State<DashboardScreen>
 
       if (mounted) {
         setState(() {
-          _pedidosPendientes = pedidos.where((p) => p.isPendiente).length;
+          _pedidosPorProcesar = pedidos.where((p) => p.isPorProcesar).length;
 
           _pedidosUrgentes = pedidos.where((p) => p.isUrgente).length;
         });
@@ -310,7 +310,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'VENTAS DEL MES',
+                          'VENTAS DEL AÑO',
                           style: TextStyle(
                             fontSize: 13,
                             fontWeight: FontWeight.w700,
@@ -344,7 +344,10 @@ class _DashboardScreenState extends State<DashboardScreen>
                                     color: Color(0xFFFFCC00),
                                   ),
                                 )
-                              : SalesChart(ventasPorMes: _ventasPorMes),
+                              : SalesChart(
+                                  ventasPorMes: _ventasPorMes,
+                                  year: _selectedYear,
+                                ),
                         ),
                       ],
                     ),
@@ -356,8 +359,8 @@ class _DashboardScreenState extends State<DashboardScreen>
                     children: [
                       Expanded(
                         child: StatsCard(
-                          title: 'Pedidos Pendientes',
-                          value: '$_pedidosPendientes',
+                          title: 'Pedidos por procesar',
+                          value: '$_pedidosPorProcesar',
                           subtitle: '$_pedidosUrgentes urgentes',
                           icon: Icons.shopping_cart_outlined,
                           accentColor: Colors.blue,

@@ -10,25 +10,41 @@ class OrderService {
 
   Future<List<OrderModel>> obtenerPedidos() async {
     final token = await _storage.read(key: 'jwt_token');
+    final pedidos = <OrderModel>[];
+    var page = 1;
+    var totalPages = 1;
 
-    final response = await http.get(
-      Uri.parse('$baseUrl?t=${DateTime.now().millisecondsSinceEpoch}'),
-      headers: {
-        'Content-Type': 'application/json',
-        if (token != null) 'Authorization': 'Bearer $token',
-      },
-    );
+    do {
+      final response = await http.get(
+        Uri.parse(baseUrl).replace(
+          queryParameters: {
+            'page': '$page',
+            'limit': '100',
+            't': '${DateTime.now().millisecondsSinceEpoch}',
+          },
+        ),
+        headers: {
+          'Content-Type': 'application/json',
+          if (token != null) 'Authorization': 'Bearer $token',
+        },
+      );
 
-    if (response.statusCode == 200) {
-      final data = jsonDecode(response.body);
-      final List pedidos = data['data'];
-      return pedidos.map((e) => OrderModel.fromJson(e)).toList();
-    }
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        final List pageItems = data['data'];
+        pedidos.addAll(pageItems.map((e) => OrderModel.fromJson(e)));
+        totalPages = (data['totalPages'] as num?)?.toInt() ?? page;
+        page++;
+        continue;
+      }
 
-    if (response.statusCode == 401 || response.statusCode == 403) {
-      throw Exception('Sesión expirada o no autorizada');
-    }
+      if (response.statusCode == 401 || response.statusCode == 403) {
+        throw Exception('Sesión expirada o no autorizada');
+      }
 
-    throw Exception('Error al cargar pedidos');
+      throw Exception('Error al cargar pedidos');
+    } while (page <= totalPages);
+
+    return pedidos;
   }
 }

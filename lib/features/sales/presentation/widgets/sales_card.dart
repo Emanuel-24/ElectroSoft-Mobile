@@ -43,7 +43,8 @@ class VentaCard extends StatelessWidget {
   }
 
   Color _obtenerColorEstado(String estado) {
-    final estadoNorm = estado.toUpperCase()
+    final estadoNorm = estado
+        .toUpperCase()
         .replaceAll('Á', 'A')
         .replaceAll('É', 'E')
         .replaceAll('Í', 'I')
@@ -52,7 +53,8 @@ class VentaCard extends StatelessWidget {
         .replaceAll('Ñ', 'N');
     if (estadoNorm.contains('ANULADA')) return Colors.red;
     if (estadoNorm.contains('FINALIZADO')) return AppTheme.verde;
-    if (estadoNorm.contains('DEVUELTO') || estadoNorm.contains('DEVOLUCION PARCIAL')) {
+    if (estadoNorm.contains('DEVUELTO') ||
+        estadoNorm.contains('DEVOLUCION PARCIAL')) {
       return Colors.blue;
     }
     return AppTheme.amarillo;
@@ -126,54 +128,69 @@ class VentaCard extends StatelessWidget {
               ),
               const SizedBox(height: 12),
               Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
+                  Expanded(
+                    child: Align(
+                      alignment: Alignment.centerLeft,
+                      child: Text(
                         'Cliente',
-                        style: TextStyle(
-                          fontSize: 11,
-                          color: Colors.grey[500],
-                        ),
+                        style: TextStyle(fontSize: 11, color: Colors.grey[500]),
                       ),
-                      const SizedBox(height: 2),
-                      SizedBox(
-                        width: 150,
-                        child: Text(
-                          venta.clienteName ?? 'Sin cliente',
-                          overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(
-                            fontSize: 13,
-                            fontWeight: FontWeight.w600,
-                            color: Colors.black87,
-                          ),
-                        ),
-                      ),
-                    ],
+                    ),
                   ),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    children: [
-                      Text(
+                  Expanded(
+                    child: Align(
+                      alignment: Alignment.centerRight,
+                      child: Text(
                         'Fecha',
-                        style: TextStyle(
-                          fontSize: 11,
-                          color: Colors.grey[500],
-                        ),
+                        style: TextStyle(fontSize: 11, color: Colors.grey[500]),
                       ),
-                      const SizedBox(height: 2),
-                      Text(
-                        _obtenerFecha(),
-                        style: const TextStyle(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.black87,
-                        ),
-                      ),
-                    ],
+                    ),
                   ),
+                ],
+              ),
+              const SizedBox(height: 2),
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      venta.clienteName ?? 'Sin cliente',
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.black87,
+                      ),
+                    ),
+                  ),
+                  Expanded(
+                    child: Text(
+                      _obtenerFecha(),
+                      textAlign: TextAlign.right,
+                      style: const TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.black87,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 3),
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      _formatearDocumento(venta),
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: Colors.grey[600],
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ),
+                  const Expanded(child: SizedBox()),
                 ],
               ),
               const SizedBox(height: 12),
@@ -184,10 +201,7 @@ class VentaCard extends StatelessWidget {
                 children: [
                   Text(
                     '$cantidadItems producto${cantidadItems != 1 ? 's' : ''}',
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: Colors.grey[600],
-                    ),
+                    style: TextStyle(fontSize: 12, color: Colors.grey[600]),
                   ),
                   Text(
                     _formatearPrecio(venta.total),
@@ -204,5 +218,16 @@ class VentaCard extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  String _formatearDocumento(Sale sale) {
+    final tipo = sale.clienteTipoDocumento?.trim();
+    final documento = sale.clienteDocumento?.trim();
+
+    if (documento == null || documento.isEmpty) {
+      return 'Documento no registrado';
+    }
+
+    return (tipo == null || tipo.isEmpty) ? documento : '$tipo: $documento';
   }
 }
